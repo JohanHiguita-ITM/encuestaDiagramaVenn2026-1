@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 const surveyController = require('../controllers/surveyController');
 
@@ -13,31 +14,7 @@ router.post('/surveys', surveyController.createSurvey);
 
 // Login routes
 router.get('/login', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Login</title>
-      <link rel="stylesheet" href="/css/login.css">
-    </head>
-    <body>
-      <div class="login-container">
-        <h1>Login</h1>
-        <form id="login-form" action="/login" method="post">
-          <label for="username">Username:</label>
-          <input type="text" id="username" name="username" required>
-          <label for="password">Password:</label>
-          <input type="password" id="password" name="password" required>
-          <button type="submit">Login</button>
-        </form>
-        <p id="message"></p>
-      </div>
-      <script src="/js/login.js"></script>
-    </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 router.post('/login', (req, res) => {
@@ -52,20 +29,7 @@ router.post('/login', (req, res) => {
 
 // Dashboard route
 router.get('/dashboard', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Dashboard</title>
-    </head>
-    <body>
-      <h1>Welcome to the Dashboard</h1>
-      <a href="/surveys">View Surveys</a>
-    </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 module.exports = router;
