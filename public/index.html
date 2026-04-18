@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Encuestas</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f0f2f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin: 20px auto;
+      width: 400px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    input {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Login</h2>
+  <input id="correoLogin" placeholder="Correo"><br><br>
+  <input id="passwordLogin" placeholder="Password"><br>
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div class="card">
+  <h2>🎵 Música</h2>
+  <div id="musica"></div>
+</div>
+
+<div class="card">
+  <h2>🍔 Comida</h2>
+  <div id="comida"></div>
+</div>
+
+<div class="card">
+  <h2>⚽ Deporte</h2>
+  <div id="deporte"></div>
+</div>
+
+<div class="card">
+  <button onclick="enviar()">Enviar respuestas 🚀</button>
+</div>
+
+<script>
+const URL = "http://localhost:3000";
+
+// PREGUNTAS
+const preguntas = {
+  musica: [
+    "¿La música te ayuda a relajarte?",
+    "¿Te gusta escuchar música en el transporte?",
+    "¿La música mejora tu ánimo?",
+    "¿Prefieres escuchar música con audífonos?",
+    "¿Te gusta descubrir artistas nuevos?",
+    "¿Escuchas música mientras haces tareas?",
+    "¿Prefieres canciones modernas?",
+    "¿Te gusta escuchar música con amigos?",
+    "¿Cambias de género musical con frecuencia?",
+    "¿Te gustaría aprender a tocar un instrumento?"
+  ],
+  comida: [
+    "¿Comes comida rápida con frecuencia?",
+    "¿Te gusta cocinar?",
+    "¿Prefieres comida salada?",
+    "¿Te gusta probar comidas nuevas?",
+    "¿Te gusta comer con salsa?",
+    "¿Comes fuera de casa frecuentemente?",
+    "¿Te gusta la comida picante?",
+    "¿Prefieres comer en restaurantes?",
+    "¿Te gusta la comida casera?",
+    "¿Te gusta probar platos típicos?"
+  ],
+  deporte: [
+    "¿Haces ejercicio todos los días?",
+    "¿Te gusta ver deportes en televisión?",
+    "¿Participas en algún equipo?",
+    "¿Crees que el deporte mejora la salud?",
+    "¿Te gusta correr?",
+    "¿Te gusta entrenar en gimnasio?",
+    "¿Prefieres deportes al aire libre?",
+    "¿Te gusta competir con otras personas?",
+    "¿Te gustaría participar en un torneo?",
+    "¿Crees que hacer deporte reduce el estrés?",
+    "¿Te gusta entrenar con amigos?"
+  ]
+};
+
+// GENERAR CHECKBOXES
+function generar(id, lista) {
+  let html = "";
+  lista.forEach((p, i) => {
+    html += `<label><input type="checkbox" id="${id}${i}"> ${p}</label>`;
+  });
+  document.getElementById(id).innerHTML = html;
+}
+
+generar("musica", preguntas.musica);
+generar("comida", preguntas.comida);
+generar("deporte", preguntas.deporte);
+
+// LOGIN
+function login() {
+  fetch(URL+"/api/auth/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      correo: correoLogin.value,
+      password: passwordLogin.value
+    })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.mensaje==="Login exitoso"){
+      localStorage.setItem("user", JSON.stringify(data.usuario));
+      alert("Login exitoso 🔥");
+    }
+  });
+}
+
+// EVALUAR GRUPO (si hay al menos un sí)
+function grupoResponde(id, total) {
+  for(let i=0;i<total;i++){
+    if(document.getElementById(id+i).checked){
+      return true;
+    }
+  }
+  return false;
+}
+
+// ENVIAR
+function enviar() {
+
+  let musica = grupoResponde("musica", 10);
+  let comida = grupoResponde("comida", 10);
+  let deporte = grupoResponde("deporte", 11);
+
+  fetch(URL+"/api/respuestas", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      usuarioId:1,
+      respuestasUsuario:{
+        p1: musica,
+        p2: comida,
+        p3: deporte
+      }
+    })
+  })
+  .then(res=>res.json())
+  .then(()=>{
+    window.location.href="venn.html"; // 🔥 REDIRECCIÓN
+  });
+}
+</script>
+
+</body>
+</html>

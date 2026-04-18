@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Venn App</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #f5f5f5;
+    }
+
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin: auto;
+    }
+
+    .circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      position: absolute;
+      opacity: 0.5;
+    }
+
+    #a { background:red; left:50px; top:50px; }
+    #b { background:blue; left:150px; top:50px; }
+    #c { background:green; left:100px; top:150px; }
+
+    .label {
+      position:absolute;
+      font-weight:bold;
+      color:black;
+    }
+
+    #l1 {top:30px; left:140px;}
+    #l2 {top:30px; left:260px;}
+    #l3 {top:260px; left:180px;}
+
+    #l12 {top:110px; left:200px;}
+    #l13 {top:170px; left:140px;}
+    #l23 {top:170px; left:260px;}
+
+    #l123 {top:150px; left:200px;}
+  </style>
+</head>
+<body>
+
+<h1>Resultados 🔥</h1>
+
+<div class="container">
+  <div id="a" class="circle"></div>
+  <div id="b" class="circle"></div>
+  <div id="c" class="circle"></div>
+
+  <div id="l1" class="label"></div>
+  <div id="l2" class="label"></div>
+  <div id="l3" class="label"></div>
+
+  <div id="l12" class="label"></div>
+  <div id="l13" class="label"></div>
+  <div id="l23" class="label"></div>
+
+  <div id="l123" class="label"></div>
+</div>
+
+<script>
+fetch("http://localhost:3000/api/respuestas")
+.then(res=>res.json())
+.then(data=>{
+
+  let t=data.length;
+
+  let s1=0,s2=0,s3=0;
+  let i12=0,i13=0,i23=0,i123=0;
+
+  data.forEach(u=>{
+    let r=u.respuestas;
+
+    if(r.p1&&!r.p2&&!r.p3)s1++;
+    if(r.p2&&!r.p1&&!r.p3)s2++;
+    if(r.p3&&!r.p1&&!r.p2)s3++;
+
+    if(r.p1&&r.p2&&!r.p3)i12++;
+    if(r.p1&&r.p3&&!r.p2)i13++;
+    if(r.p2&&r.p3&&!r.p1)i23++;
+
+    if(r.p1&&r.p2&&r.p3)i123++;
+  });
+
+  const p=x=>t?Math.round((x/t)*100):0;
+
+  l1.innerText=p(s1)+"%";
+  l2.innerText=p(s2)+"%";
+  l3.innerText=p(s3)+"%";
+
+  l12.innerText=p(i12)+"%";
+  l13.innerText=p(i13)+"%";
+  l23.innerText=p(i23)+"%";
+
+  l123.innerText=p(i123)+"%";
+});
+</script>
+
+</body>
+</html>
