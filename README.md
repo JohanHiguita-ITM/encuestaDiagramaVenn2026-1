@@ -18,6 +18,7 @@ The server will run on port 3000 by default.
 
 - GET / : Welcome message
 - GET /surveys : Get all surveys
+- GET /surveys/:id/questions : Get all questions for a specific survey
 - POST /surveys : Create a new survey (body: { title, questions })
 - GET /login : Login page (SSR)
 - POST /login : Handle login (dummy auth: admin/password)

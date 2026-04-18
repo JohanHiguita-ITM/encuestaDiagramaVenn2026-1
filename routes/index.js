@@ -10,6 +10,7 @@ router.get('/', (req, res) => {
 
 // Survey routes
 router.get('/surveys', surveyController.getAllSurveys);
+router.get('/surveys/:id/questions', surveyController.getSurveyQuestions);
 router.post('/surveys', surveyController.createSurvey);
 
 // Login routes

@@ -1,27 +1,35 @@
-// Survey Model (in-memory for now)
-let surveys = [];
-let nextId = 1;
+// Survey Model (PostgreSQL-based)
+const client = require('../config/db');
 
 class Survey {
-  constructor(title, questions) {
-    this.id = nextId++;
-    this.title = title;
-    this.questions = questions;
-    this.createdAt = new Date();
+  static async getAll() {
+    await client.connect();
+    const res = await client.query('SELECT * FROM categoria');
+    return res.rows;
   }
 
-  static getAll() {
-    return surveys;
+  static async getQuestions(id) {
+    await client.connect();
+    const res = await client.query('SELECT * FROM pregunta WHERE id_categoria = $1', [id]);
+    return res.rows;
   }
 
-  static create(title, questions) {
-    const survey = new Survey(title, questions);
-    surveys.push(survey);
-    return survey;
+  static async create(title, questions) {
+    await client.connect();
+    // Insert category
+    const catRes = await client.query('INSERT INTO categoria (nombre) VALUES ($1) RETURNING *', [title]);
+    const category = catRes.rows[0];
+    // Insert questions
+    for (const q of questions) {
+      await client.query('INSERT INTO pregunta (id_categoria, texto_pregunta) VALUES ($1, $2)', [category.id_categoria, q]);
+    }
+    return { ...category, questions };
   }
 
-  static findById(id) {
-    return surveys.find(s => s.id === parseInt(id));
+  static async findById(id) {
+    await client.connect();
+    const res = await client.query('SELECT * FROM categoria WHERE id_categoria = $1', [id]);
+    return res.rows[0] || null;
   }
 }
 
