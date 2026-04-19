@@ -11,6 +11,17 @@ CREATE TABLE participante (
     semestre INT CHECK (semestre > 0)
 );
 
+CREATE TABLE participante_login (
+    id_participante INT PRIMARY KEY,
+    codigo VARCHAR(64) NOT NULL UNIQUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expiracion TIMESTAMP NULL,
+    CONSTRAINT fk_participante_login
+        FOREIGN KEY (id_participante)
+        REFERENCES participante(id_participante)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE pregunta (
     id_pregunta SERIAL PRIMARY KEY,
     id_categoria INT NOT NULL,

@@ -3,19 +3,16 @@ const client = require('../config/db');
 
 class Survey {
   static async getAll() {
-    await client.connect();
     const res = await client.query('SELECT * FROM categoria');
     return res.rows;
   }
 
   static async getQuestions(id) {
-    await client.connect();
     const res = await client.query('SELECT * FROM pregunta WHERE id_categoria = $1', [id]);
     return res.rows;
   }
 
   static async create(title, questions) {
-    await client.connect();
     // Insert category
     const catRes = await client.query('INSERT INTO categoria (nombre) VALUES ($1) RETURNING *', [title]);
     const category = catRes.rows[0];
@@ -27,7 +24,6 @@ class Survey {
   }
 
   static async findById(id) {
-    await client.connect();
     const res = await client.query('SELECT * FROM categoria WHERE id_categoria = $1', [id]);
     return res.rows[0] || null;
   }
