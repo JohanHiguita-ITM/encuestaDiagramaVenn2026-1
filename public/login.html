@@ -5,17 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="/css/login.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
 </head>
 <body>
-  <div class="login-container">
+  <div id="app" class="login-container">
     <h1>Login</h1>
-    <form id="login-form" action="/login" method="post">
+    <form @submit.prevent="submitLogin">
       <label for="codigo">Código de participante:</label>
-      <input type="text" id="codigo" name="codigo" required>
-      <button type="submit">Ingresar</button>
+      <input
+        type="text"
+        id="codigo"
+        v-model.trim="codigo"
+        required>
+      <button type="submit" :disabled="!codigo.trim()">
+        Ingresar
+      </button>
     </form>
-    <p id="message"></p>
+    <p v-if="message" :class="{ error: message.includes('Por favor') }">
+      {{ message }}
+    </p>
   </div>
-  <script src="/js/login.js"></script>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          codigo: '',
+          message: null
+        };
+      },
+      methods: {
+        submitLogin() {
+          if (!this.codigo.trim()) {
+            this.message = 'Por favor ingresa tu código de participante.';
+            return;
+          }
+
+          this.message = null;
+          fetch('/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ codigo: this.codigo.trim() })
+          }).then(async (response) => {
+            if (response.ok) {
+              const {redirect} = await response.json();
+ 
+              if (redirect) {
+               window.location.href = redirect;
+              } 
+            }
+          })
+        }
+      }
+    }).mount('#app');
+  </script>
 </body>
 </html>

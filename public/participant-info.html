@@ -5,29 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Complete Your Information</title>
   <link rel="stylesheet" href="/css/login.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
 </head>
 <body>
-  <div class="login-container">
+  <div id="app" class="login-container">
     <h1>Complete Your Information</h1>
-    <form id="info-form">
-      <input type="hidden" id="code" name="code">
+
+    <div v-if="loading" class="loading">Loading...</div>
+
+    <div v-if="error" class="error">{{ error }}</div>
+
+    <form v-if="!loading && !error" @submit.prevent="submitInfo" id="info-form">
       <label for="edad">Edad:</label>
-      <input type="number" id="edad" name="edad" min="1" required>
+      <input
+        type="number"
+        id="edad"
+        v-model.number="formData.edad"
+        min="1"
+        required>
+
       <label for="genero">Género:</label>
-      <select id="genero" name="genero" multiple required>
+      <select
+        id="genero"
+        v-model="formData.genero"
+        multiple
+        required>
         <option value="Masculino">Masculino</option>
         <option value="Femenino">Femenino</option>
         <option value="No binario">No binario</option>
         <option value="Prefiero no responder">Prefiero no responder</option>
       </select>
+
       <label for="carrera">Carrera:</label>
-      <input type="text" id="carrera" name="carrera" required>
+      <input
+        type="text"
+        id="carrera"
+        v-model.trim="formData.carrera"
+        required>
+
       <label for="semestre">Semestre:</label>
-      <input type="number" id="semestre" name="semestre" min="1" required>
-      <button type="submit">Save information</button>
+      <input
+        type="number"
+        id="semestre"
+        v-model.number="formData.semestre"
+        min="1"
+        required>
+
+      <button type="submit" :disabled="submitting">
+        {{ submitting ? 'Saving...' : 'Save information' }}
+      </button>
     </form>
-    <p id="message"></p>
+
+    <p v-if="message" :class="{ success: message.includes('success'), error: message.includes('Error') }">
+      {{ message }}
+    </p>
   </div>
-  <script src="/js/participant-info.js"></script>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          code: null,
+          loading: true,
+          error: null,
+          message: null,
+          submitting: false,
+          formData: {
+            edad: null,
+            genero: [],
+            carrera: '',
+            semestre: null
+          }
+        };
+      },
+      methods: {
+        async validateAndLoadForm() {
+          const query = new URLSearchParams(window.location.search);
+          this.code = query.get('code');
+
+          if (!this.code) {
+            window.location.href = '/login';
+            return;
+          }
+
+          try {
+            const response = await fetch(`/participant/validate/${encodeURIComponent(this.code)}`);
+
+            if (!response.ok) {
+              window.location.href = '/login';
+              return;
+            }
+
+            const data = await response.json();
+            if (!data.valid) {
+              window.location.href = '/login';
+              return;
+            }
+
+            this.loading = false;
+          } catch (error) {
+            window.location.href = '/login';
+          }
+        },
+
+        async submitInfo() {
+          this.submitting = true;
+          this.message = 'Saving...';
+
+          const payload = {
+            code: this.code,
+            edad: this.formData.edad,
+            genero: Array.isArray(this.formData.genero) ? this.formData.genero.join(', ') : this.formData.genero,
+            carrera: this.formData.carrera,
+            semestre: this.formData.semestre
+          };
+
+          try {
+            const response = await fetch('/participant/info', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              const result = await response.json();
+              throw new Error(result.error || 'Unable to save information');
+            }
+
+            window.location.href = `/survey?code=${encodeURIComponent(this.code)}`;
+          } catch (error) {
+            this.message = error.message;
+            this.submitting = false;
+          }
+        }
+      },
+
+      mounted() {
+        this.validateAndLoadForm();
+      }
+    }).mount('#app');
+  </script>
 </body>
 </html>

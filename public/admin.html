@@ -5,15 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel</title>
   <link rel="stylesheet" href="/css/login.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container">
+  <div id="app" class="login-container">
     <h1>Admin Panel</h1>
-    <button id="new-participant">Create new participant</button>
-    <p id="message"></p>
+    <button @click="createParticipant" :disabled="creating" id="new-participant">
+      {{ creating ? 'Creating...' : 'Create new participant' }}
+    </button>
+    <p v-if="message" :class="{ success: message.includes('created'), error: !message.includes('created') }">
+      {{ message }}
+    </p>
+
     <section>
       <h2>Participants</h2>
-      <table id="participants-table">
+      <div v-if="loading" class="loading">Loading participants...</div>
+      <div v-if="error && !loading" class="error">{{ error }}</div>
+      <table v-if="!loading && !error" id="participants-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -24,10 +53,80 @@
             <th>Semestre</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          <tr v-for="participant in participants" :key="participant.id_participante">
+            <td>{{ participant.id_participante }}</td>
+            <td>{{ participant.codigo || '' }}</td>
+            <td>{{ participant.edad || '' }}</td>
+            <td>{{ participant.genero || '' }}</td>
+            <td>{{ participant.carrera || '' }}</td>
+            <td>{{ participant.semestre || '' }}</td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </div>
-  <script src="/js/admin.js"></script>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          participants: [],
+          loading: true,
+          error: null,
+          message: null,
+          creating: false
+        };
+      },
+      methods: {
+        async createParticipant() {
+          this.creating = true;
+          this.message = 'Creating participant...';
+
+          try {
+            const response = await fetch('/admin/participants', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create participant');
+            }
+
+            const participant = await response.json();
+            this.message = `New participant created with code: ${participant.codigo}`;
+            await this.loadParticipants();
+          } catch (error) {
+            this.message = error.message;
+          } finally {
+            this.creating = false;
+          }
+        },
+
+        async loadParticipants() {
+          this.loading = true;
+          this.error = null;
+
+          try {
+            const response = await fetch('/admin/participants');
+            if (!response.ok) {
+              throw new Error('Failed to load participants');
+            }
+            this.participants = await response.json();
+          } catch (error) {
+            this.error = 'Unable to load participants.';
+          } finally {
+            this.loading = false;
+          }
+        }
+      },
+
+      mounted() {
+        this.loadParticipants();
+      }
+    }).mount('#app');
+  </script>
 </body>
 </html>

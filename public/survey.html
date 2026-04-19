@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey</title>
   <link rel="stylesheet" href="/css/login.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
   <style>
     .progress-bar {
       width: 100%;
@@ -33,12 +34,6 @@
     .tab-button.active {
       background-color: #bbb;
     }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
     .category-questions {
       margin-bottom: 20px;
     }
@@ -66,37 +61,343 @@
       background-color: #cccccc;
       cursor: not-allowed;
     }
-    #prev-button {
-      display: none;
-    }
-    #next-button {
-      display: none;
-    }
     .page-navigation {
       display: flex;
       gap: 10px;
       margin-top: 15px;
       justify-content: center;
     }
+    .dots-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .dot-button {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #4CAF50;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      padding: 0;
+    }
+    .dot-answered {
+      background-color: #4CAF50;
+    }
   </style>
 </head>
 <body>
-  <div class="login-container">
+  <div id="app" class="login-container">
     <h1>Encuesta</h1>
     <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+      <div class="progress-fill" :style="{ width: progress + '%' }"></div>
     </div>
-    <div class="tabs" id="tabs"></div>
-    <form id="survey-form">
-      <div id="survey-content"></div>
-      <div class="button-container">
-        <button type="button" class="nav-button" id="prev-button">← Anterior</button>
-        <button type="button" class="nav-button" id="next-button">Siguiente →</button>
-        <button type="submit" class="nav-button" id="submit-button" style="display: none;">Enviar Respuestas</button>
+
+    <div v-if="loading" class="loading">Cargando encuesta...</div>
+
+    <div v-if="error" class="error">{{ error }}</div>
+
+    <div v-if="!loading && !error">
+      <div class="tabs">
+        <button
+          v-for="(category, index) in categories"
+          :key="category.id"
+          class="tab-button"
+          :class="{ active: index === currentCategoryIndex }"
+          @click="showCategory(index)">
+          {{ category.nombre }}
+        </button>
       </div>
-    </form>
-    <p id="message"></p>
+
+      <form @submit.prevent="submitResponses">
+        <div class="category-questions">
+          <h2>{{ currentCategory.nombre }}</h2>
+
+          <p v-if="totalPages > 1" style="text-align: center; color: #666; margin-bottom: 15px;">
+            Página {{ currentPageInCategory + 1 }} de {{ totalPages }}
+          </p>
+
+          <div v-if="totalPages > 1" class="dots-container">
+            <button
+              v-for="(question, idx) in currentPageQuestions"
+              :key="question.id"
+              type="button"
+              class="dot-button"
+              :class="{ 'dot-answered': isQuestionAnswered(question.id) }"
+              :title="'Pregunta ' + (currentPageInCategory * questionsPerPage + idx + 1)">
+            </button>
+          </div>
+
+          <div
+            v-for="question in currentPageQuestions"
+            :key="question.id"
+            class="question">
+            <p>{{ question.texto }}</p>
+            <label>
+              <input
+                type="radio"
+                :name="'q' + question.id"
+                value="Sí"
+                v-model="responses[question.id]"
+                @change="onAnswerChange"> Sí
+            </label>
+            <label>
+              <input
+                type="radio"
+                :name="'q' + question.id"
+                value="No"
+                v-model="responses[question.id]"
+                @change="onAnswerChange"> No
+            </label>
+          </div>
+
+          <div v-if="totalPages > 1" class="page-navigation">
+            <button
+              type="button"
+              class="nav-button"
+              @click="prevPage"
+              :disabled="currentPageInCategory === 0">
+              ← Página Anterior
+            </button>
+            <button
+              type="button"
+              class="nav-button"
+              @click="nextPage"
+              :disabled="currentPageInCategory >= totalPages - 1">
+              Página Siguiente →
+            </button>
+          </div>
+        </div>
+
+        <div class="button-container">
+          <button
+            type="button"
+            class="nav-button"
+            @click="prevCategory"
+            :style="{ display: currentCategoryIndex > 0 ? 'block' : 'none' }">
+            ← Anterior
+          </button>
+          <button
+            v-if="currentCategoryIndex < categories.length - 1"
+            type="button"
+            class="nav-button"
+            @click="nextCategory"
+            :style="{ display: isCurrentCategoryComplete ? 'block' : 'none' }">
+            Siguiente →
+          </button>
+          <button
+            v-if="currentCategoryIndex === categories.length - 1"
+            type="submit"
+            class="nav-button"
+            :style="{ display: isCurrentCategoryComplete ? 'block' : 'none' }">
+            Enviar Respuestas
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <p v-if="message" :class="{ success: message.includes('exitosamente'), error: message.includes('Error') }">
+      {{ message }}
+    </p>
   </div>
-  <script src="/js/survey.js"></script>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          code: null,
+          loading: true,
+          error: null,
+          message: null,
+          categories: [],
+          currentCategoryIndex: 0,
+          currentPageInCategory: 0,
+          questionsPerPage: 5,
+          responses: {},
+          savedResponses: {},
+          autoAdvanceTimeout: null
+        };
+      },
+      computed: {
+        currentCategory() {
+          return this.categories[this.currentCategoryIndex] || {};
+        },
+        totalPages() {
+          return Math.ceil(this.currentCategory.preguntas?.length / this.questionsPerPage) || 1;
+        },
+        currentPageQuestions() {
+          const startIdx = this.currentPageInCategory * this.questionsPerPage;
+          const endIdx = Math.min(startIdx + this.questionsPerPage, this.currentCategory.preguntas?.length || 0);
+          return this.currentCategory.preguntas?.slice(startIdx, endIdx) || [];
+        },
+        progress() {
+          return ((this.currentCategoryIndex + 1) / this.categories.length) * 100;
+        },
+        isCurrentCategoryComplete() {
+          return this.currentCategory.preguntas?.every(q => this.responses[q.id]) || false;
+        }
+      },
+      methods: {
+        async validateAndLoadSurvey() {
+          const query = new URLSearchParams(window.location.search);
+          this.code = query.get('code');
+
+          if (!this.code) {
+            window.location.href = '/login';
+            return;
+          }
+
+          try {
+            const response = await fetch(`/participant/validate/${encodeURIComponent(this.code)}`);
+            if (!response.ok) {
+              window.location.href = '/login';
+              return;
+            }
+            const data = await response.json();
+            if (!data.valid) {
+              window.location.href = '/login';
+              return;
+            }
+            if (data.needsInfo) {
+              window.location.href = `/participant/info?code=${encodeURIComponent(this.code)}`;
+              return;
+            }
+            await this.loadSurvey();
+          } catch (error) {
+            window.location.href = '/login';
+          }
+        },
+
+        async loadSurvey() {
+          try {
+            const response = await fetch('/survey/data');
+            if (!response.ok) {
+              throw new Error('Failed to load survey');
+            }
+            const data = await response.json();
+            this.categories = data.categories;
+
+            // Load existing responses for this participant
+            const savedResp = await fetch(`/survey/responses/${encodeURIComponent(this.code)}`)
+              .then(res => res.ok ? res.json() : Promise.resolve({ responses: [] }))
+              .catch(() => ({ responses: [] }));
+
+            // Create a map of saved responses for easy lookup
+            if (savedResp.responses) {
+              savedResp.responses.forEach(resp => {
+                this.savedResponses[resp.id_pregunta] = resp.valor;
+                this.responses[resp.id_pregunta] = resp.valor;
+              });
+            }
+
+            this.loading = false;
+          } catch (error) {
+            this.error = error.message;
+            this.loading = false;
+          }
+        },
+
+        showCategory(index) {
+          this.currentCategoryIndex = index;
+          this.currentPageInCategory = 0;
+          this.checkAutoAdvance();
+        },
+
+        prevCategory() {
+          if (this.currentCategoryIndex > 0) {
+            this.showCategory(this.currentCategoryIndex - 1);
+          }
+        },
+
+        nextCategory() {
+          if (this.currentCategoryIndex < this.categories.length - 1) {
+            this.showCategory(this.currentCategoryIndex + 1);
+          }
+        },
+
+        prevPage() {
+          if (this.currentPageInCategory > 0) {
+            this.currentPageInCategory--;
+          }
+        },
+
+        nextPage() {
+          if (this.currentPageInCategory < this.totalPages - 1) {
+            this.currentPageInCategory++;
+          }
+        },
+
+        isQuestionAnswered(questionId) {
+          return this.responses[questionId] || this.savedResponses[questionId];
+        },
+
+        onAnswerChange() {
+          this.checkAutoAdvance();
+        },
+
+        checkAutoAdvance() {
+          if (this.isCurrentCategoryComplete && this.currentCategoryIndex < this.categories.length - 1) {
+            // Clear any existing timeout
+            if (this.autoAdvanceTimeout) {
+              clearTimeout(this.autoAdvanceTimeout);
+            }
+
+            this.autoAdvanceTimeout = setTimeout(() => {
+              if (this.isCurrentCategoryComplete && this.currentCategoryIndex < this.categories.length - 1) {
+                this.autoAdvanceTimeout = null;
+                this.showCategory(this.currentCategoryIndex + 1);
+              }
+            }, 1000);
+          } else {
+            // Clear timeout if questions become unanswered
+            if (this.autoAdvanceTimeout) {
+              clearTimeout(this.autoAdvanceTimeout);
+              this.autoAdvanceTimeout = null;
+            }
+          }
+        },
+
+        async submitResponses() {
+          this.message = 'Enviando...';
+
+          const responses = Object.entries(this.responses).map(([id_pregunta, valor]) => ({
+            id_pregunta: parseInt(id_pregunta),
+            valor
+          }));
+
+          try {
+            const response = await fetch('/survey/responses', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: this.code, responses })
+            });
+            if (!response.ok) {
+              const result = await response.json();
+              throw new Error(result.error || 'Failed to submit responses');
+            }
+            this.message = 'Respuestas enviadas exitosamente. Gracias por participar.';
+          } catch (error) {
+            this.message = error.message;
+          }
+        }
+      },
+
+      mounted() {
+        this.validateAndLoadSurvey();
+      },
+
+      beforeUnmount() {
+        if (this.autoAdvanceTimeout) {
+          clearTimeout(this.autoAdvanceTimeout);
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
 </body>
 </html>

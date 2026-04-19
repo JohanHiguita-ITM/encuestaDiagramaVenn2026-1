@@ -8,7 +8,7 @@ const db = require('@config/db');
 
 // Root route
 router.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the Survey App' });
+  res.redirect('/login');
 });
 
 // Survey routes
@@ -28,26 +28,26 @@ router.post('/login', async (req, res) => {
   const { codigo } = req.body;
 
   if (!codigo || typeof codigo !== 'string') {
-    return res.send('Invalid login code. <a href="/login">Try again</a>');
+    return res.status(400).json({ error: 'Invalid login code' });
   }
 
   try {
     const participant = await Participant.findByCode(codigo.trim());
 
     if (!participant) {
-      return res.send('Invalid login code. <a href="/login">Try again</a>');
+      return res.status(401).json({ error: 'Invalid login code' });
     }
 
     const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => value === null);
 
     if (needsInfo) {
-      return res.redirect(`/participant/info?code=${encodeURIComponent(codigo.trim())}`);
+      return res.json({ redirect: `/participant/info?code=${encodeURIComponent(codigo.trim())}` });
     }
 
-    return res.redirect(`/survey?code=${encodeURIComponent(codigo.trim())}`);
+    return res.json({ redirect: `/survey?code=${encodeURIComponent(codigo.trim())}` });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).send('Server error. Please try again later.');
+    res.status(500).json({ error: 'Server error. Please try again later.' });
   }
 });
 
