@@ -1,5 +1,5 @@
 // Survey Controller
-const Survey = require('../models/Survey');
+const Survey = require('@models/Survey');
 
 const getAllSurveys = async (req, res) => {
   try {

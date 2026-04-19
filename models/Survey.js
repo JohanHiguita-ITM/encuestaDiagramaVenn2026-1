@@ -1,5 +1,5 @@
 // Survey Model (PostgreSQL-based)
-const client = require('../config/db');
+const client = require('@config/db');
 
 class Survey {
   static async getAll() {

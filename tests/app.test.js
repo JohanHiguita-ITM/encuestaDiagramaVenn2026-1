@@ -1,6 +1,7 @@
 // Basic test placeholder
+require('module-alias/register');
 const request = require('supertest');
-const app = require('../app');
+const app = require('@root/app');
 
 describe('GET /', () => {
   it('should return welcome message', async () => {

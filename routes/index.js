@@ -1,8 +1,9 @@
 const express = require('express');
 const path = require('path');
+const paths = require('@utils/paths');
 const router = express.Router();
-const surveyController = require('../controllers/surveyController');
-const db = require('../config/db');
+const surveyController = require('@controllers/surveyController');
+const db = require('@config/db');
 
 // Root route
 router.get('/', (req, res) => {
@@ -16,7 +17,7 @@ router.post('/surveys', surveyController.createSurvey);
 
 // Login routes
 router.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/login.html'));
+  res.sendFile(path.join(paths.public, 'login.html'));
 });
 
 router.post('/login', async (req, res) => {
@@ -48,7 +49,7 @@ router.post('/login', async (req, res) => {
 
 // Dashboard route
 router.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+  res.sendFile(path.join(paths.public, 'dashboard.html'));
 });
 
 module.exports = router;
