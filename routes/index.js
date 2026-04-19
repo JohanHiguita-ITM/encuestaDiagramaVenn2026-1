@@ -17,6 +17,7 @@ router.get('/surveys/:id/questions', surveyController.getSurveyQuestions);
 router.post('/surveys', surveyController.createSurvey);
 router.get('/survey/data', surveyController.getSurveyData);
 router.post('/survey/responses', surveyController.submitResponses);
+router.get('/survey/responses/:code', surveyController.getParticipantResponses);
 
 // Login routes
 router.get('/login', (req, res) => {

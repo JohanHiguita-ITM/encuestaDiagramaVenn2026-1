@@ -54,6 +54,16 @@ class Survey {
       await client.query(query, [participantId, response.id_pregunta, response.valor]);
     }
   }
+
+  static async getParticipantResponses(participantId) {
+    const query = `
+      SELECT id_pregunta, valor
+      FROM respuesta
+      WHERE id_participante = $1
+    `;
+    const res = await client.query(query, [participantId]);
+    return res.rows;
+  }
 }
 
 module.exports = Survey;

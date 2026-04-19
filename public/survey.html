@@ -5,13 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey</title>
   <link rel="stylesheet" href="/css/login.css">
+  <style>
+    .progress-bar {
+      width: 100%;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .progress-fill {
+      height: 20px;
+      background-color: #4CAF50;
+      border-radius: 5px;
+      transition: width 0.3s;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .tab-button {
+      flex: 1;
+      padding: 10px;
+      background-color: #ddd;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tab-button.active {
+      background-color: #bbb;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .category-questions {
+      margin-bottom: 20px;
+    }
+    .question {
+      margin-bottom: 15px;
+    }
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: space-between;
+    }
+    .nav-button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .nav-button:hover {
+      background-color: #45a049;
+    }
+    .nav-button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #prev-button {
+      display: none;
+    }
+    #next-button {
+      display: none;
+    }
+    .page-navigation {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
     <h1>Encuesta</h1>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
     <form id="survey-form">
       <div id="survey-content"></div>
-      <button type="submit">Enviar Respuestas</button>
+      <div class="button-container">
+        <button type="button" class="nav-button" id="prev-button">← Anterior</button>
+        <button type="button" class="nav-button" id="next-button">Siguiente →</button>
+        <button type="submit" class="nav-button" id="submit-button" style="display: none;">Enviar Respuestas</button>
+      </div>
     </form>
     <p id="message"></p>
   </div>

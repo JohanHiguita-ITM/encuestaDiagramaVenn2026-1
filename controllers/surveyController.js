@@ -62,10 +62,28 @@ const submitResponses = async (req, res) => {
   }
 };
 
+const getParticipantResponses = async (req, res) => {
+  try {
+    const { code } = req.params;
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ error: 'Invalid code format' });
+    }
+    const participant = await require('@models/Participant').findByCode(code);
+    if (!participant) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+    const responses = await Survey.getParticipantResponses(participant.id_participante);
+    res.json({ responses });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   getAllSurveys,
   getSurveyQuestions,
   createSurvey,
   getSurveyData,
-  submitResponses
+  submitResponses,
+  getParticipantResponses
 };
