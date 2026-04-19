@@ -52,6 +52,29 @@ router.get('/participant/info', (req, res) => {
   res.sendFile(path.join(paths.public, 'participant-info.html'));
 });
 
+router.get('/participant/validate/:code', async (req, res) => {
+  const { code } = req.params;
+
+  if (!code || typeof code !== 'string') {
+    return res.status(400).json({ error: 'Invalid code format' });
+  }
+
+  try {
+    const participant = await Participant.findByCode(code.trim());
+
+    if (!participant) {
+      return res.status(404).json({ error: 'Code not found' });
+    }
+
+    const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => value === null);
+
+    return res.json({ valid: true, needsInfo, participantId: participant.id_participante });
+  } catch (error) {
+    console.error('Validate code error:', error);
+    return res.status(500).json({ error: 'Unable to validate code' });
+  }
+});
+
 router.post('/participant/info', async (req, res) => {
   const { code, edad, genero, carrera, semestre } = req.body;
 
