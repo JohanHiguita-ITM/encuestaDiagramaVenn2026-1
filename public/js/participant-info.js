@@ -60,7 +60,7 @@ form.addEventListener('submit', async (event) => {
       throw new Error(result.error || 'Unable to save information');
     }
 
-    window.location.href = '/surveys';
+    window.location.href = `/survey?code=${encodeURIComponent(code)}`;
   } catch (error) {
     message.textContent = error.message;
   }

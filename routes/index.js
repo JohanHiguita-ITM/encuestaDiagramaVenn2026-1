@@ -15,6 +15,8 @@ router.get('/', (req, res) => {
 router.get('/surveys', surveyController.getAllSurveys);
 router.get('/surveys/:id/questions', surveyController.getSurveyQuestions);
 router.post('/surveys', surveyController.createSurvey);
+router.get('/survey/data', surveyController.getSurveyData);
+router.post('/survey/responses', surveyController.submitResponses);
 
 // Login routes
 router.get('/login', (req, res) => {
@@ -41,7 +43,7 @@ router.post('/login', async (req, res) => {
       return res.redirect(`/participant/info?code=${encodeURIComponent(codigo.trim())}`);
     }
 
-    return res.redirect('/dashboard');
+    return res.redirect(`/survey?code=${encodeURIComponent(codigo.trim())}`);
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).send('Server error. Please try again later.');
@@ -50,6 +52,10 @@ router.post('/login', async (req, res) => {
 
 router.get('/participant/info', (req, res) => {
   res.sendFile(path.join(paths.public, 'participant-info.html'));
+});
+
+router.get('/survey', (req, res) => {
+  res.sendFile(path.join(paths.public, 'survey.html'));
 });
 
 router.get('/participant/validate/:code', async (req, res) => {

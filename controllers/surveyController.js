@@ -36,8 +36,36 @@ const createSurvey = async (req, res) => {
   }
 };
 
+const getSurveyData = async (req, res) => {
+  try {
+    const data = await Survey.getAllWithQuestions();
+    res.json({ categories: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const submitResponses = async (req, res) => {
+  try {
+    const { code, responses } = req.body;
+    if (!code || !responses || !Array.isArray(responses)) {
+      return res.status(400).json({ error: 'Code and responses are required' });
+    }
+    const participant = await require('@models/Participant').findByCode(code);
+    if (!participant) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+    await Survey.saveResponses(participant.id_participante, responses);
+    res.json({ message: 'Responses saved successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   getAllSurveys,
   getSurveyQuestions,
-  createSurvey
+  createSurvey,
+  getSurveyData,
+  submitResponses
 };

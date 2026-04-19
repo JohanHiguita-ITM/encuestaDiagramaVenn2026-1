@@ -1,4 +1,3 @@
-// Survey Model (PostgreSQL-based)
 const client = require('@config/db');
 
 class Survey {
@@ -23,9 +22,37 @@ class Survey {
     return { ...category, questions };
   }
 
-  static async findById(id) {
-    const res = await client.query('SELECT * FROM categoria WHERE id_categoria = $1', [id]);
-    return res.rows[0] || null;
+  static async getAllWithQuestions() {
+    const res = await client.query(`
+      SELECT c.id_categoria, c.nombre, p.id_pregunta, p.texto_pregunta
+      FROM categoria c
+      LEFT JOIN pregunta p ON c.id_categoria = p.id_categoria
+      ORDER BY c.id_categoria, p.id_pregunta
+    `);
+    const categories = {};
+    res.rows.forEach(row => {
+      if (!categories[row.id_categoria]) {
+        categories[row.id_categoria] = {
+          id: row.id_categoria,
+          nombre: row.nombre,
+          preguntas: []
+        };
+      }
+      if (row.id_pregunta) {
+        categories[row.id_categoria].preguntas.push({
+          id: row.id_pregunta,
+          texto: row.texto_pregunta
+        });
+      }
+    });
+    return Object.values(categories);
+  }
+
+  static async saveResponses(participantId, responses) {
+    const query = 'INSERT INTO respuesta (id_participante, id_pregunta, valor) VALUES ($1, $2, $3)';
+    for (const response of responses) {
+      await client.query(query, [participantId, response.id_pregunta, response.valor]);
+    }
   }
 }
 
