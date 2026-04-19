@@ -16,9 +16,13 @@ if (!connectionString) {
   );
 }
 
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false }
-});
+const useSsl = process.env.DB_SSL === 'true' || env === 'production';
+const poolConfig = { connectionString };
+
+if (useSsl) {
+  poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+const pool = new Pool(poolConfig);
 
 module.exports = pool;

@@ -17,12 +17,13 @@ The server will run on port 3000 by default.
 
 ## Environment configuration
 
-Create a `.env`.
+Create a `.env` file using the settings below.
 
 Required variables:
 
 - `PORT=3000`
 - `NODE_ENV=development`
+- `DB_SSL=false`
 - `DEV_DATABASE_URL=postgres://usuario:contraseña@localhost:5432/encuesta_dev`
 - `TEST_DATABASE_URL=postgres://usuario:contraseña@localhost:5432/encuesta_test`
 - `PROD_DATABASE_URL=postgres://usuario:contraseña@servidor:5432/encuesta_prod`
@@ -38,6 +39,8 @@ The app selects the database URL based on `NODE_ENV`:
 - `production` uses `PROD_DATABASE_URL`
 
 If no environment-specific URL is set, it falls back to `DATABASE_URL`.
+
+Use `DB_SSL=true` only when your database requires SSL. For local development, keep `DB_SSL=false`.
 
 ## API Endpoints
 

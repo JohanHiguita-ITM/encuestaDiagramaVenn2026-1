@@ -3,6 +3,7 @@ const path = require('path');
 const paths = require('@utils/paths');
 const router = express.Router();
 const surveyController = require('@controllers/surveyController');
+const Participant = require('@models/Participant');
 const db = require('@config/db');
 
 // Root route
@@ -28,22 +29,78 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const query = `
-      SELECT p.*
-      FROM participante p
-      JOIN participante_login l ON p.id_participante = l.id_participante
-      WHERE l.codigo = $1
-    `;
-    const result = await db.query(query, [codigo.trim()]);
+    const participant = await Participant.findByCode(codigo.trim());
 
-    if (result.rowCount === 1) {
-      return res.redirect('/dashboard');
+    if (!participant) {
+      return res.send('Invalid login code. <a href="/login">Try again</a>');
     }
 
-    return res.send('Invalid login code. <a href="/login">Try again</a>');
+    const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => value === null);
+
+    if (needsInfo) {
+      return res.redirect(`/participant/info?code=${encodeURIComponent(codigo.trim())}`);
+    }
+
+    return res.redirect('/dashboard');
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).send('Server error. Please try again later.');
+  }
+});
+
+router.get('/participant/info', (req, res) => {
+  res.sendFile(path.join(paths.public, 'participant-info.html'));
+});
+
+router.post('/participant/info', async (req, res) => {
+  const { code, edad, genero, carrera, semestre } = req.body;
+
+  if (!code || !edad || !genero || !carrera || !semestre) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  try {
+    const participant = await Participant.findByCode(code.trim());
+
+    if (!participant) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+
+    await Participant.updateInfo(participant.id_participante, {
+      edad: parseInt(edad, 10),
+      genero: genero.trim(),
+      carrera: carrera.trim(),
+      semestre: parseInt(semestre, 10)
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Participant info saving error:', error);
+    return res.status(500).json({ error: 'Unable to save participant information' });
+  }
+});
+
+router.get('/admin', (req, res) => {
+  res.sendFile(path.join(paths.public, 'admin.html'));
+});
+
+router.get('/admin/participants', async (req, res) => {
+  try {
+    const participants = await Participant.getAllWithCodes();
+    res.json(participants);
+  } catch (error) {
+    console.error('Get participants error:', error);
+    res.status(500).json({ error: 'Unable to load participants' });
+  }
+});
+
+router.post('/admin/participants', async (req, res) => {
+  try {
+    const participant = await Participant.createEmptyWithCode();
+    res.status(201).json(participant);
+  } catch (error) {
+    console.error('Create participant error:', error);
+    res.status(500).json({ error: 'Unable to create participant' });
   }
 });
 
