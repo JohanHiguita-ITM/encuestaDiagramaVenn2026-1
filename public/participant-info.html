@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,52 +8,81 @@
   <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
 </head>
+
+<style>
+  #info-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  #info-form label {
+    align-self: flex-start;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: bold;
+  }
+
+  #info-form select {
+    width: auto;
+    height: 30px;
+  }
+
+  #info-form input {
+    width: auto;
+    height: 14px;
+    margin-bottom: 12px;
+  }
+
+  #info-form button {
+    align-self: center;
+    margin-top: 16px;
+  }
+
+  .form-item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+</style>
+
 <body>
   <div id="app" class="login-container">
-    <h1>Complete Your Information</h1>
+    <h1 style="font-style: italic;">Información Personal</h1>
 
     <div v-if="loading" class="loading">Loading...</div>
 
     <div v-if="error" class="error">{{ error }}</div>
 
     <form v-if="!loading && !error" @submit.prevent="submitInfo" id="info-form">
-      <label for="edad">Edad:</label>
-      <input
-        type="number"
-        id="edad"
-        v-model.number="formData.edad"
-        min="1"
-        required>
+      <div class="form-item">
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" v-model.number="formData.edad" min="1" max="99" required>
+      </div>
 
-      <label for="genero">Género:</label>
-      <select
-        id="genero"
-        v-model="formData.genero"
-        multiple
-        required>
-        <option value="Masculino">Masculino</option>
-        <option value="Femenino">Femenino</option>
-        <option value="No binario">No binario</option>
-        <option value="Prefiero no responder">Prefiero no responder</option>
-      </select>
+      <div class="form-item">
+        <label for="genero">Género:</label>
+        <select id="genero" v-model="formData.genero" required>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
+          <option value="No binario">No binario</option>
+          <option value="Prefiero no responder">Prefiero no responder</option>
+        </select>
+      </div>
 
-      <label for="carrera">Carrera:</label>
-      <input
-        type="text"
-        id="carrera"
-        v-model.trim="formData.carrera"
-        required>
+      <div class="form-item">
+        <label for="carrera">Carrera:</label>
+        <input type="text" id="carrera" v-model.trim="formData.carrera" required>
+      </div>
 
-      <label for="semestre">Semestre:</label>
-      <input
-        type="number"
-        id="semestre"
-        v-model.number="formData.semestre"
-        min="1"
-        required>
+      <div class="form-item">
+        <label for="semestre">Semestre:</label>
+        <input type="number" id="semestre" v-model.number="formData.semestre" min="1" max="12" required>
+      </div>
 
       <button type="submit" :disabled="submitting">
-        {{ submitting ? 'Saving...' : 'Save information' }}
+        {{ submitting ? 'Guardando...' : 'Guardar Informacion' }}
       </button>
     </form>
 
@@ -148,4 +178,5 @@
     }).mount('#app');
   </script>
 </body>
+
 </html>

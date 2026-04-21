@@ -55,27 +55,3 @@ button:hover {
   margin-top: 15px;
   color: red;
 }
-
-/* Participant Info Form */
-#info-form {
-  align-items: flex-start;
-  width: 100%;
-  max-width: 400px;
-}
-
-#info-form label {
-  align-self: flex-start;
-  margin-top: 12px;
-  margin-bottom: 4px;
-}
-
-#info-form input,
-#info-form select {
-  width: 100%;
-  margin-bottom: 12px;
-}
-
-#info-form button {
-  align-self: center;
-  margin-top: 16px;
-}
