@@ -4,12 +4,15 @@ const paths = require('@utils/paths');
 const router = express.Router();
 const surveyController = require('@controllers/surveyController');
 const Participant = require('@models/Participant');
+const ofertaAcademicaController = require('@controllers/ofertaAcademicaController');
 const db = require('@config/db');
 
 // Root route
 router.get('/', (req, res) => {
   res.redirect('/login');
 });
+// oferta
+router.get('/ofertas', ofertaAcademicaController.getAllOfertas);
 
 // Survey routes
 router.get('/surveys', surveyController.getAllSurveys);
@@ -38,7 +41,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid login code' });
     }
 
-    const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => value === null);
+    console.log(participant.carrera)
+    const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => !value);
 
     if (needsInfo) {
       return res.json({ redirect: `/participant/info?code=${encodeURIComponent(codigo.trim())}` });
@@ -53,6 +57,31 @@ router.post('/login', async (req, res) => {
 
 router.get('/participant/info', (req, res) => {
   res.sendFile(path.join(paths.public, 'participant-info.html'));
+});
+
+router.get('/participant/info/:code', async (req, res) => {
+  const { code } = req.params;
+  if (!code || typeof code !== 'string') {
+    return res.status(400).json({ error: 'Invalid code format' });
+  }
+
+  try {
+    const participant = await Participant.findByCode(code.trim());
+    if (!participant) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+    res.json({
+      participant: {
+        edad: participant.edad,
+        genero: participant.genero,
+        carrera: participant.carrera,
+        semestre: participant.semestre
+      }
+    });
+  } catch (error) {
+    console.error('Get participant info error:', error);
+    res.status(500).json({ error: 'Unable to retrieve participant information' });
+  }
 });
 
 router.get('/survey', (req, res) => {
@@ -99,7 +128,7 @@ router.post('/participant/info', async (req, res) => {
     await Participant.updateInfo(participant.id_participante, {
       edad: parseInt(edad, 10),
       genero: genero.trim(),
-      carrera: carrera.trim(),
+      carrera: carrera,
       semestre: parseInt(semestre, 10)
     });
 

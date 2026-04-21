@@ -72,8 +72,17 @@
       </div>
 
       <div class="form-item">
-        <label for="carrera">Carrera:</label>
-        <input type="text" id="carrera" v-model.trim="formData.carrera" required>
+        <label for="programa_academico">Programa Académico:</label>
+        <select id="programa_academico" v-model="formData.carrera" required>
+          <option value="" disabled selected>Seleccione un programa académico</option>
+
+          <optgroup v-for="grupo in ofertaAcademica" :key="grupo.categoria" :label="grupo.categoria">
+            <option v-for="programa in grupo.programas" :key="programa" :value="programa.id_programa">
+              {{ programa.nombre }}
+            </option>
+          </optgroup>
+
+        </select>
       </div>
 
       <div class="form-item">
@@ -102,6 +111,7 @@
           error: null,
           message: null,
           submitting: false,
+          ofertaAcademica: null,
           formData: {
             edad: null,
             genero: [],
@@ -111,6 +121,34 @@
         };
       },
       methods: {
+        async getParticipantData() {
+          const data = await fetch(`/participant/info/${encodeURIComponent(this.code)}`)
+            .then(res => res.json())
+            .catch(err => {
+              this.error = 'Error fetching participant data';
+              console.error(err);
+            });
+
+          this.formData = {...this.formData, ...data.participant };
+        },
+
+        async getOfertaAcademica() {
+          try {
+            const response = await fetch('/ofertas', {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              this.ofertaAcademica = data.ofertas
+            }
+          } catch (err) {
+            this.message = error.message;
+
+          }
+        },
+
         async validateAndLoadForm() {
           const query = new URLSearchParams(window.location.search);
           this.code = query.get('code');
@@ -134,6 +172,7 @@
               return;
             }
 
+            await this.getParticipantData();
             this.loading = false;
           } catch (error) {
             window.location.href = '/login';
@@ -171,9 +210,9 @@
           }
         }
       },
-
-      mounted() {
-        this.validateAndLoadForm();
+      async mounted() {
+        await this.getOfertaAcademica();
+        await this.validateAndLoadForm();
       }
     }).mount('#app');
   </script>
