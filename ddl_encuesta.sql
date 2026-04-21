@@ -47,3 +47,18 @@ CREATE TABLE respuesta (
         REFERENCES pregunta(id_pregunta) 
         ON DELETE CASCADE
 );
+
+CREATE TABLE tipo_programa (
+    id_tipo_programa SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE programa_academico (
+    id_programa SERIAL PRIMARY KEY,
+    id_tipo_programa INT NOT NULL,
+    nombre VARCHAR(150) NOT NULL UNIQUE,
+    CONSTRAINT fk_tipo_programa 
+        FOREIGN KEY (id_tipo_programa) 
+        REFERENCES tipo_programa(id_tipo_programa) 
+        ON DELETE CASCADE
+);

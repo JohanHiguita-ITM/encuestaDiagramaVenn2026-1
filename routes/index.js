@@ -4,12 +4,15 @@ const paths = require('@utils/paths');
 const router = express.Router();
 const surveyController = require('@controllers/surveyController');
 const Participant = require('@models/Participant');
+const ofertaAcademicaController = require('@controllers/ofertaAcademicaController');
 const db = require('@config/db');
 
 // Root route
 router.get('/', (req, res) => {
   res.redirect('/login');
 });
+// oferta
+router.get('/ofertas', ofertaAcademicaController.getAllOfertas);
 
 // Survey routes
 router.get('/surveys', surveyController.getAllSurveys);
@@ -99,7 +102,7 @@ router.post('/participant/info', async (req, res) => {
     await Participant.updateInfo(participant.id_participante, {
       edad: parseInt(edad, 10),
       genero: genero.trim(),
-      carrera: carrera.trim(),
+      carrera: carrera,
       semestre: parseInt(semestre, 10)
     });
 

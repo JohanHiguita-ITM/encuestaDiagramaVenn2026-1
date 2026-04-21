@@ -128,7 +128,7 @@
         </button>
       </div>
 
-      <form @submit.prevent="submitResponses">
+      <form @submit.prevent="null">
         <div class="category-questions">
           <h2>{{ currentCategory.nombre }}</h2>
 
@@ -169,7 +169,7 @@
           <button @click="nextCategory" class="nav-button width-full" :disabled="!isCurrentCategoryComplete" v-if="currentCategoryIndex < categories.length - 1">
             Siguiente Categoría
           </button>
-          <button type="submit" class="nav-button width-full" v-if="isFormValid">
+          <button @click="submitResponses" class="nav-button width-full" v-if="isFormValid">
             Enviar Respuestas
           </button>
         </div>
