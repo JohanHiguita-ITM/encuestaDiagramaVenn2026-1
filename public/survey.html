@@ -347,12 +347,6 @@
       mounted() {
         this.validateAndLoadSurvey();
       },
-
-      beforeUnmount() {
-        if (this.autoAdvanceTimeout) {
-          clearTimeout(this.autoAdvanceTimeout);
-        }
-      }
     }).mount('#app');
   </script>
 </body>
