@@ -54,9 +54,16 @@ class Participant {
   static async getAllWithCodes() {
     const res = await db.query(
       `
-      SELECT p.id_participante, p.edad, p.genero, p.carrera, p.semestre, l.codigo
+      SELECT 
+          p.id_participante, 
+          p.edad, 
+          p.genero, 
+          pa.nombre AS carrera, 
+          p.semestre, 
+          l.codigo
       FROM participante p
       LEFT JOIN participante_login l ON p.id_participante = l.id_participante
+      LEFT JOIN programa_academico pa ON p.id_programa = pa.id_programa
       ORDER BY p.id_participante
       `
     );
@@ -70,7 +77,7 @@ class Participant {
       UPDATE participante
       SET edad = $1,
           genero = $2,
-          carrera = $3,
+          id_programa = $3,
           semestre = $4
       WHERE id_participante = $5
       RETURNING *

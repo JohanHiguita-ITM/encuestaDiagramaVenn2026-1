@@ -62,3 +62,13 @@ CREATE TABLE programa_academico (
         REFERENCES tipo_programa(id_tipo_programa) 
         ON DELETE CASCADE
 );
+
+ALTER TABLE participante 
+    DROP COLUMN carrera,
+    ADD COLUMN id_programa INT;
+
+ALTER TABLE participante 
+    ADD CONSTRAINT fk_programa_academico 
+        FOREIGN KEY (id_programa) 
+        REFERENCES programa_academico(id_programa) 
+        ON DELETE SET NULL;

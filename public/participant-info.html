@@ -121,6 +121,17 @@
         };
       },
       methods: {
+        async getParticipantData() {
+          const data = await fetch(`/participant/info/${encodeURIComponent(this.code)}`)
+            .then(res => res.json())
+            .catch(err => {
+              this.error = 'Error fetching participant data';
+              console.error(err);
+            });
+
+          this.formData = {...this.formData, ...data.participant };
+        },
+
         async getOfertaAcademica() {
           try {
             const response = await fetch('/ofertas', {
@@ -161,6 +172,7 @@
               return;
             }
 
+            await this.getParticipantData();
             this.loading = false;
           } catch (error) {
             window.location.href = '/login';
