@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,16 +14,19 @@
       border-radius: 5px;
       margin-bottom: 20px;
     }
+
     .progress-fill {
       height: 20px;
       background-color: #4CAF50;
       border-radius: 5px;
       transition: width 0.3s;
     }
+
     .tabs {
       display: flex;
       margin-bottom: 20px;
     }
+
     .tab-button {
       flex: 1;
       padding: 10px;
@@ -31,21 +35,27 @@
       cursor: pointer;
       text-align: center;
     }
+
     .tab-button.active {
       background-color: #bbb;
     }
+
     .category-questions {
       margin-bottom: 20px;
     }
+
     .question {
       margin-bottom: 15px;
     }
+
     .button-container {
       display: flex;
+      flex-direction: column;
       gap: 10px;
       margin-top: 20px;
       justify-content: space-between;
     }
+
     .nav-button {
       padding: 10px 20px;
       background-color: #4CAF50;
@@ -54,26 +64,35 @@
       cursor: pointer;
       border-radius: 5px;
     }
+    
+    .width-full {
+      width: 100%;
+    }
+
     .nav-button:hover {
       background-color: #45a049;
     }
+
     .nav-button:disabled {
       background-color: #cccccc;
       cursor: not-allowed;
     }
+
     .page-navigation {
       display: flex;
       gap: 10px;
       margin-top: 15px;
       justify-content: center;
     }
+
     .dots-container {
       display: flex;
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 2rem;
       justify-content: center;
       flex-wrap: wrap;
     }
+
     .dot-button {
       width: 12px;
       height: 12px;
@@ -83,11 +102,13 @@
       cursor: pointer;
       padding: 0;
     }
+
     .dot-answered {
       background-color: #4CAF50;
     }
   </style>
 </head>
+
 <body>
   <div id="app" class="login-container">
     <h1>Encuesta</h1>
@@ -101,12 +122,8 @@
 
     <div v-if="!loading && !error">
       <div class="tabs">
-        <button
-          v-for="(category, index) in categories"
-          :key="category.id"
-          class="tab-button"
-          :class="{ active: index === currentCategoryIndex }"
-          @click="showCategory(index)">
+        <button v-for="(category, index) in categories" :key="category.id" class="tab-button"
+          :class="{ active: index === currentCategoryIndex }" @click="showCategory(index)">
           {{ category.nombre }}
         </button>
       </div>
@@ -120,77 +137,39 @@
           </p>
 
           <div v-if="totalPages > 1" class="dots-container">
-            <button
-              v-for="(question, idx) in currentPageQuestions"
-              :key="question.id"
-              type="button"
-              class="dot-button"
-              :class="{ 'dot-answered': isQuestionAnswered(question.id) }"
-              :title="'Pregunta ' + (currentPageInCategory * questionsPerPage + idx + 1)">
+            <button v-for="(question, idx) in totalPages" :key="idx-currentPageInCategory" type="button"
+              class="dot-button" :class="{ 'dot-answered': currentPageInCategory === idx }" @click="showPage(idx)">
             </button>
+
+            <div v-if="totalPages > 1" class="page-navigation">
+              <button type="button" class="nav-button" @click="prevPage" :disabled="currentPageInCategory === 0">
+                ← Página Anterior
+              </button>
+              <button type="button" class="nav-button" @click="nextPage"
+                :disabled="currentPageInCategory >= totalPages - 1">
+                Página Siguiente →
+              </button>
+            </div>
           </div>
 
-          <div
-            v-for="question in currentPageQuestions"
-            :key="question.id"
-            class="question">
+          <div v-for="question in currentPageQuestions" :key="question.id" class="question">
             <p>{{ question.texto }}</p>
             <label>
-              <input
-                type="radio"
-                :name="'q' + question.id"
-                value="Sí"
-                v-model="responses[question.id]"
-                @change="onAnswerChange"> Sí
+              <input type="radio" :name="'q' + question.id" value="Sí" v-model="responses[question.id]">
+              Sí
             </label>
             <label>
-              <input
-                type="radio"
-                :name="'q' + question.id"
-                value="No"
-                v-model="responses[question.id]"
-                @change="onAnswerChange"> No
+              <input type="radio" :name="'q' + question.id" value="No" v-model="responses[question.id]">
+              No
             </label>
-          </div>
-
-          <div v-if="totalPages > 1" class="page-navigation">
-            <button
-              type="button"
-              class="nav-button"
-              @click="prevPage"
-              :disabled="currentPageInCategory === 0">
-              ← Página Anterior
-            </button>
-            <button
-              type="button"
-              class="nav-button"
-              @click="nextPage"
-              :disabled="currentPageInCategory >= totalPages - 1">
-              Página Siguiente →
-            </button>
           </div>
         </div>
 
         <div class="button-container">
-          <button
-            type="button"
-            class="nav-button"
-            @click="prevCategory"
-            :style="{ display: currentCategoryIndex > 0 ? 'block' : 'none' }">
-            ← Anterior
+          <button @click="nextCategory" class="nav-button width-full" :disabled="!isCurrentCategoryComplete" v-if="currentCategoryIndex < categories.length - 1">
+            Siguiente Categoría
           </button>
-          <button
-            v-if="currentCategoryIndex < categories.length - 1"
-            type="button"
-            class="nav-button"
-            @click="nextCategory"
-            :style="{ display: isCurrentCategoryComplete ? 'block' : 'none' }">
-            Siguiente →
-          </button>
-          <button
-            type="submit"
-            class="nav-button"
-            :style="{ display: isCurrentCategoryComplete ? 'block' : 'none' }">
+          <button type="submit" class="nav-button width-full" v-if="isFormValid">
             Enviar Respuestas
           </button>
         </div>
@@ -218,7 +197,6 @@
           questionsPerPage: 5,
           responses: {},
           savedResponses: {},
-          autoAdvanceTimeout: null
         };
       },
       computed: {
@@ -238,6 +216,11 @@
         },
         isCurrentCategoryComplete() {
           return this.currentCategory.preguntas?.every(q => this.responses[q.id]) || false;
+        },
+        isFormValid() {
+          return this.categories.every(category =>
+            category.preguntas?.every(q => this.responses[q.id]) || false
+          );
         }
       },
       methods: {
@@ -303,7 +286,10 @@
         showCategory(index) {
           this.currentCategoryIndex = index;
           this.currentPageInCategory = 0;
-          this.checkAutoAdvance();
+        },
+
+        showPage(index) {
+          this.currentPageInCategory = index;
         },
 
         prevCategory() {
@@ -334,32 +320,6 @@
           return this.responses[questionId] || this.savedResponses[questionId];
         },
 
-        onAnswerChange() {
-          this.checkAutoAdvance();
-        },
-
-        checkAutoAdvance() {
-          if (this.isCurrentCategoryComplete && this.currentCategoryIndex < this.categories.length - 1) {
-            // Clear any existing timeout
-            if (this.autoAdvanceTimeout) {
-              clearTimeout(this.autoAdvanceTimeout);
-            }
-
-            this.autoAdvanceTimeout = setTimeout(() => {
-              if (this.isCurrentCategoryComplete && this.currentCategoryIndex < this.categories.length - 1) {
-                this.autoAdvanceTimeout = null;
-                this.showCategory(this.currentCategoryIndex + 1);
-              }
-            }, 1000);
-          } else {
-            // Clear timeout if questions become unanswered
-            if (this.autoAdvanceTimeout) {
-              clearTimeout(this.autoAdvanceTimeout);
-              this.autoAdvanceTimeout = null;
-            }
-          }
-        },
-
         async submitResponses() {
           this.message = 'Enviando...';
 
@@ -384,7 +344,6 @@
           }
         }
       },
-
       mounted() {
         this.validateAndLoadSurvey();
       },
@@ -397,6 +356,8 @@
     }).mount('#app');
   </script>
 </body>
+
 </html>
 </body>
+
 </html>
