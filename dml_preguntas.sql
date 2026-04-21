@@ -40,12 +40,3 @@ INSERT INTO pregunta (id_categoria, texto_pregunta) VALUES (3, '¿Te gusta compe
 INSERT INTO pregunta (id_categoria, texto_pregunta) VALUES (3, '¿Te gustaría participar en un torneo?');
 INSERT INTO pregunta (id_categoria, texto_pregunta) VALUES (3, '¿Crees que hacer deporte reduce el estrés?');
 INSERT INTO pregunta (id_categoria, texto_pregunta) VALUES (3, '¿Te gusta entrenar con amigos?');
-
-
--- INSERT INTO pregunta (id_categoria, texto_pregunta) VALUES
--- (1, '¿Cuál es tu género musical favorito?'), -- Pregunta ID 1
--- (1, '¿Tocas algún instrumento?'),            -- Pregunta ID 2
--- (2, '¿Cuál es tu plato típico favorito?'),   -- Pregunta ID 3
--- (2, '¿Prefieres dulce o salado?'),           -- Pregunta ID 4
--- (3, '¿Practicas algún deporte?'),            -- Pregunta ID 5
--- (3, '¿Cuál es tu equipo favorito?');          -- Pregunta ID 6
