@@ -47,9 +47,7 @@ class Dashboard {
 
     if (ctes.length === 0) return {};
 
-    // 2. Construir los conteos e intersecciones (El Diagrama de Venn)
     const selects = [];
-
     if (setNames.length >= 1) {
       selects.push(`(SELECT COUNT(*) FROM set_a) AS "A"`);
     }
@@ -66,14 +64,12 @@ class Dashboard {
       selects.push(`(SELECT COUNT(*) FROM set_a INNER JOIN set_b USING(id_participante) INNER JOIN set_c USING(id_participante)) AS "ABC"`);
     }
 
-    // 3. Ensamblar el Query Final con la cláusula WITH
     const query = `
       WITH ${ctes.join(',\n      ')}
       SELECT
         ${selects.join(',\n        ')};
     `;
 
-    // Ejecutar en base de datos
     const { rows } = await client.query(query, values);
     const row = rows[0];
     const formattedData = {};
