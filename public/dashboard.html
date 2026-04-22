@@ -73,15 +73,6 @@
   <div id="app">
     <h1>Compose Venn Diagram</h1>
 
-    <div style="margin-bottom: 20px;">
-      <label style="font-weight: bold; margin-right: 10px;">Operación:</label>
-      <select v-model="operacion" style="padding: 5px; font-size: 16px;">
-        <option value="union">Unión (Todos los conjuntos)</option>
-        <option value="interseccion">Intersección (Solo coincidencias)</option>
-        <option value="diferencia">Diferencia (Solo Set A, excluyendo el resto)</option>
-      </select>
-    </div>
-
     <button class="btn btn-primary" @click="addSet" :disabled="querySets.length >= 3" style="margin-bottom: 20px;">
       + Add Set (Max 3)
     </button>

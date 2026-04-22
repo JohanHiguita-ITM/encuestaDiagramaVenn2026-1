@@ -13,20 +13,8 @@ const db = require('@config/db');
 router.get('/', (req, res) => {
   res.redirect('/login');
 });
-// oferta
-router.get('/ofertas', ofertaAcademicaController.getAllOfertas);
 
-// Survey routes
-router.get('/careers', surveyController.getAllCareers);
-router.get('/questions', surveyController.getAllQuestions);
-router.get('/surveys', surveyController.getAllSurveys);
-router.get('/surveys/:id/questions', surveyController.getSurveyQuestions);
-router.post('/surveys', surveyController.createSurvey);
-router.get('/survey/data', surveyController.getSurveyData);
-router.post('/survey/responses', surveyController.submitResponses);
-router.get('/survey/responses/:code', surveyController.getParticipantResponses);
-
-// Login routes
+// SSR Routes
 router.get('/qr/', async (req, res) => {
   try {
     const participant = await Participant.createEmptyWithCode();
@@ -37,6 +25,7 @@ router.get('/qr/', async (req, res) => {
     res.status(500).json({ error: 'Unable to create participant' });
   }
 });
+
 router.get('/login/:code', (req, res) => {
   res.sendFile(path.join(paths.public, 'login.html'));
 });
@@ -44,6 +33,35 @@ router.get('/login/:code', (req, res) => {
 router.get('/login', (req, res) => {
   res.sendFile(path.join(paths.public, 'login.html'));
 });
+
+router.get('/participant/info', (req, res) => {
+  res.sendFile(path.join(paths.public, 'participant-info.html'));
+});
+
+router.get('/survey', (req, res) => {
+  res.sendFile(path.join(paths.public, 'survey.html'));
+});
+
+router.get('/admin', (req, res) => {
+  res.sendFile(path.join(paths.public, 'admin.html'));
+});
+
+router.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(paths.public, 'dashboard.html'));
+});
+
+
+// API routes
+router.get('/ofertas', ofertaAcademicaController.getAllOfertas);
+router.get('/careers', surveyController.getAllCareers);
+router.get('/questions', surveyController.getAllQuestions);
+router.get('/surveys', surveyController.getAllSurveys);
+router.get('/surveys/:id/questions', surveyController.getSurveyQuestions);
+router.post('/surveys', surveyController.createSurvey);
+router.get('/survey/data', surveyController.getSurveyData);
+router.post('/survey/responses', surveyController.submitResponses);
+router.get('/survey/responses/:code', surveyController.getParticipantResponses);
+router.post('/dashboard/data', dashboardController.getDashboardData);
 
 router.post('/login', async (req, res) => {
   const { codigo } = req.body;
@@ -59,8 +77,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid login code' });
     }
 
-    console.log(participant.carrera)
-    const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => !value);
+    const needsInfo = [participant.edad, participant.genero, participant.id_programa, participant.semestre].some(value => !value);
 
     if (needsInfo) {
       return res.json({ redirect: `/participant/info?code=${encodeURIComponent(codigo.trim())}` });
@@ -71,10 +88,6 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error. Please try again later.' });
   }
-});
-
-router.get('/participant/info', (req, res) => {
-  res.sendFile(path.join(paths.public, 'participant-info.html'));
 });
 
 router.get('/participant/info/:code', async (req, res) => {
@@ -102,10 +115,6 @@ router.get('/participant/info/:code', async (req, res) => {
   }
 });
 
-router.get('/survey', (req, res) => {
-  res.sendFile(path.join(paths.public, 'survey.html'));
-});
-
 router.get('/participant/validate/:code', async (req, res) => {
   const { code } = req.params;
 
@@ -120,7 +129,7 @@ router.get('/participant/validate/:code', async (req, res) => {
       return res.status(404).json({ error: 'Code not found' });
     }
 
-    const needsInfo = [participant.edad, participant.genero, participant.carrera, participant.semestre].some(value => value === null);
+    const needsInfo = [participant.edad, participant.genero, participant.id_programa, participant.semestre].some(value => !value);
 
     return res.json({ valid: true, needsInfo, participantId: participant.id_participante });
   } catch (error) {
@@ -157,10 +166,6 @@ router.post('/participant/info', async (req, res) => {
   }
 });
 
-router.get('/admin', (req, res) => {
-  res.sendFile(path.join(paths.public, 'admin.html'));
-});
-
 router.get('/admin/participants', async (req, res) => {
   try {
     const participants = await Participant.getAllWithCodes();
@@ -180,12 +185,5 @@ router.post('/admin/participants', async (req, res) => {
     res.status(500).json({ error: 'Unable to create participant' });
   }
 });
-
-// Dashboard route
-router.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(paths.public, 'dashboard.html'));
-});
-
-router.post('/dashboard/data', dashboardController.getDashboardData);
 
 module.exports = router;
