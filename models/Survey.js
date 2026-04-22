@@ -72,6 +72,12 @@ class Survey {
     
     return result.rows
   }
+  static async getAllCareers() {
+    const query = 'SELECT id_programa, nombre FROM programa_academico ORDER BY nombre ASC';
+    const result = await client.query(query);
+
+    return result.rows;
+  }
 }
 
 module.exports = Survey;

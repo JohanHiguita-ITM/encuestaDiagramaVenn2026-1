@@ -88,6 +88,16 @@ const getAllQuestions = async (req, res) => {
   }
 }
 
+const getAllCareers = async (req, res) => {
+  try {
+    const response = await Survey.getAllCareers();
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 module.exports = {
   getAllSurveys,
   getSurveyQuestions,
@@ -95,5 +105,6 @@ module.exports = {
   getSurveyData,
   submitResponses,
   getParticipantResponses,
-  getAllQuestions
+  getAllQuestions,
+  getAllCareers
 };

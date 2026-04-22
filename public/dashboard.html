@@ -1,30 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Venn Dashboard</title>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn"></script>
-  
+
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .set-container { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 4px; background: #f9f9f9; width: 280px; }
-    .flex-row { display: flex; gap: 20px; flex-wrap: wrap; }
-    .btn { padding: 8px 12px; cursor: pointer; border-radius: 4px; border: none; color: white; }
-    .btn-primary { background: #007bff; }
-    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-danger { background: #dc3545; }
-    .result-card { margin-top: 20px; padding: 15px; border-left: 5px solid #28a745; background: #e9ecef; font-size: 18px; }
-    input[type="number"], select { width: 100%; padding: 6px; box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .set-container {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: #f9f9f9;
+      width: 280px;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: none;
+      color: white;
+    }
+
+    .btn-primary {
+      background: #007bff;
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+    }
+
+    .result-card {
+      margin-top: 20px;
+      padding: 15px;
+      border-left: 5px solid #28a745;
+      background: #e9ecef;
+      font-size: 18px;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
+
 <body>
   <div id="app">
     <h1>Compose Venn Diagram</h1>
-    
+
     <div style="margin-bottom: 20px;">
       <label style="font-weight: bold; margin-right: 10px;">Operación:</label>
       <select v-model="operacion" style="padding: 5px; font-size: 16px;">
@@ -40,26 +88,39 @@
 
     <div class="flex-row">
       <div v-for="(set, index) in querySets" :key="index" class="set-container">
-        <h3>Set {{ String.fromCharCode(65 + index) }}</h3> 
-        
-        <label>Pregunta:</label><br>
-        <select v-model="set.questionId" style="margin-bottom: 10px;">
-          <option value="" disabled>Seleccione una pregunta</option>
-          <option v-for="q in preguntasDisponibles" :key="q.id_pregunta" :value="q.id_pregunta">
-            Q{{ q.id_pregunta }} - {{ q.texto_pregunta }}
-          </option>
-        </select><br>
-        
-        <label>Respuesta (Sí/No):</label><br>
-        <select v-model="set.answerValue" style="margin-bottom: 15px;">
-          <option value="" disabled>Seleccione una opción</option>
-          <option value="Si">Sí</option>
-          <option value="No">No</option>
-        </select><br>
+        <h3>Conjunto {{ String.fromCharCode(65 + index) }}</h3>
 
-        <button class="btn btn-danger" @click="removeSet(index)" :disabled="querySets.length <= 1" style="width: 100%;">
-          Remove
-        </button>
+        <label>Tipo de Filtro:</label>
+        <select v-model="set.type">
+          <option value="pregunta">Pregunta de Encuesta</option>
+          <option value="carrera">Carrera Académica</option>
+          <option value="genero">Género</option>
+        </select>
+
+        <div v-if="set.type === 'pregunta'">
+          <select v-model="set.id_pregunta">
+            <option v-for="q in preguntasDisponibles" :value="q.id_pregunta">{{ q.texto_pregunta }}</option>
+          </select>
+          <select v-model="set.valor">
+            <option value="Si">Sí</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div v-if="set.type === 'carrera'">
+          <select v-model="set.id_programa">
+            <option v-for="c in carrerasDisponibles" :value="c.id_programa">{{ c.nombre }}</option>
+          </select>
+        </div>
+
+        <div v-if="set.type === 'genero'">
+          <select id="genero" v-model="set.genero" required>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="No binario">No binario</option>
+            <option value="Prefiero no responder">Prefiero no responder</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -83,25 +144,27 @@
     createApp({
       data() {
         return {
+          carrerasDisponibles: [], // Array to hold careers from DB,
           preguntasDisponibles: [], // Array to hold questions from DB
           querySets: [
             { questionId: '', answerValue: '' }, // Initialize empty to force dropdown selection
             { questionId: '', answerValue: '' }
           ],
           operacion: 'union',
-          rawData: null, 
+          rawData: null,
           chartInstance: null
         };
       },
       mounted() {
         // Fetch questions as soon as the page loads
         this.cargarPreguntas();
+        this.cargarCarreras();
       },
       computed: {
         resultadoOperacion() {
           if (!this.rawData) return null;
 
-          const val = (key) => this.rawData[key] || 0; 
+          const val = (key) => this.rawData[key] || 0;
           const setsCount = this.querySets.length;
 
           if (this.operacion === 'interseccion') {
@@ -126,6 +189,15 @@
         }
       },
       methods: {
+        async cargarCarreras() {
+          try {
+            const response = await fetch('/careers');
+            this.carrerasDisponibles = await response.json();
+          } catch (error) {
+            console.error("Error loading careers:", error);
+            alert("No se pudieron cargar las carreras desde la base de datos.");
+          }
+        },
         async cargarPreguntas() {
           try {
             const response = await fetch('/questions');
@@ -141,12 +213,31 @@
         removeSet(index) {
           if (this.querySets.length > 1) {
             this.querySets.splice(index, 1);
-            this.rawData = null; 
+            this.rawData = null;
             if (this.chartInstance) this.chartInstance.destroy();
           }
         },
         async fetchVennData() {
-          const isValid = this.querySets.every(set => set.questionId !== '' && set.answerValue !== '');
+          const isValid = this.querySets.every(set => {
+            if (set.type === 'pregunta') {
+              // Si es pregunta, obligamos a que tenga ID y un valor (Sí/No)
+              return set.id_pregunta !== '' && set.valor !== '';
+            }
+            if (set.type === 'carrera') {
+              // Si es carrera, solo necesitamos que haya seleccionado un id_programa
+              return set.id_programa !== '';
+            }
+            if (set.type === 'genero') {
+              // Si es género, solo necesitamos que haya seleccionado el género
+              return set.genero !== '';
+            }
+            return false;
+          });
+
+          if (!isValid) {
+            alert("Por favor, asegúrese de completar todos los campos requeridos según el tipo de filtro elegido.");
+            return;
+          }
           if (!isValid) {
             alert("Por favor asegúrese de seleccionar una pregunta y una respuesta para todos los conjuntos.");
             return;
@@ -158,7 +249,7 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ sets: this.querySets })
             });
-            
+
             this.rawData = await response.json();
             this.renderChart(this.rawData);
           } catch (error) {
@@ -192,7 +283,7 @@
                 label: 'Participantes',
                 data: chartData,
                 backgroundColor: [
-                  'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 
+                  'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
                   'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
                 ]
               }]
@@ -203,4 +294,5 @@
     }).mount('#app');
   </script>
 </body>
+
 </html>
