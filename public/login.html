@@ -60,6 +60,20 @@
             }
           })
         }
+      },
+      mounted() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+          this.message = 'Código de participante no encontrado. Por favor intenta nuevamente.';
+        }
+
+        const code = urlParams.get('code');
+        if (code) {
+          this.codigo = code;
+        }
+
+        this.submitLogin();
       }
     }).mount('#app');
   </script>

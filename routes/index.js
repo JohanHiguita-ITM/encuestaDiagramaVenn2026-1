@@ -27,6 +27,20 @@ router.post('/survey/responses', surveyController.submitResponses);
 router.get('/survey/responses/:code', surveyController.getParticipantResponses);
 
 // Login routes
+router.get('/qr/', async (req, res) => {
+  try {
+    const participant = await Participant.createEmptyWithCode();
+    res.redirect(`/login?code=${encodeURIComponent(participant.codigo)}`);
+    
+  } catch (error) {
+    console.error('Create participant error:', error);
+    res.status(500).json({ error: 'Unable to create participant' });
+  }
+});
+router.get('/login/:code', (req, res) => {
+  res.sendFile(path.join(paths.public, 'login.html'));
+});
+
 router.get('/login', (req, res) => {
   res.sendFile(path.join(paths.public, 'login.html'));
 });
