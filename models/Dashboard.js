@@ -51,7 +51,7 @@ class Dashboard {
         const values = sets.flatMap(s => [s.questionId, s.answerValue]);
 
         // 6. Execute the query
-        const result = await db.query(query, values); // Adjust based on your db driver (pg, etc.)
+        const result = await client.query(query, values); // Adjust based on your db driver (pg, etc.)
 
         // Node-postgres (pg) sometimes returns SUM() aggregations as strings to prevent JS integer overflow.
         // We convert them back to standard numbers so Chart.js can read them properly.
@@ -62,7 +62,7 @@ class Dashboard {
         }
 
         // Return the perfectly formatted object back to Vue
-        res.json(formattedData);
+        return formattedData
     }
 }
 

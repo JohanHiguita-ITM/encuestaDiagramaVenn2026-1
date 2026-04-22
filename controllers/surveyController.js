@@ -79,11 +79,21 @@ const getParticipantResponses = async (req, res) => {
   }
 };
 
+const getAllQuestions = async (req, res) => {
+  try {
+    const response = await Survey.getAllQuestions();
+    res.json(response)
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 module.exports = {
   getAllSurveys,
   getSurveyQuestions,
   createSurvey,
   getSurveyData,
   submitResponses,
-  getParticipantResponses
+  getParticipantResponses,
+  getAllQuestions
 };

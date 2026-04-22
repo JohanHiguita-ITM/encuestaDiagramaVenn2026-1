@@ -64,6 +64,14 @@ class Survey {
     const res = await client.query(query, [participantId]);
     return res.rows;
   }
+
+  static async getAllQuestions() {
+    // We select the ID and the text, ordered so they show up nicely in the dropdown
+    const query = 'SELECT id_pregunta, texto_pregunta FROM pregunta ORDER BY id_pregunta ASC';
+    const result = await client.query(query); // Adjust to your db driver
+    
+    return result.rows
+  }
 }
 
 module.exports = Survey;

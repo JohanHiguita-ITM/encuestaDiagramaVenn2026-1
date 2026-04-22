@@ -17,6 +17,8 @@ router.get('/', (req, res) => {
 router.get('/ofertas', ofertaAcademicaController.getAllOfertas);
 
 // Survey routes
+
+router.get('/questions', surveyController.getAllQuestions);
 router.get('/surveys', surveyController.getAllSurveys);
 router.get('/surveys/:id/questions', surveyController.getSurveyQuestions);
 router.post('/surveys', surveyController.createSurvey);

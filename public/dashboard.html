@@ -11,18 +11,29 @@
   
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    .set-container { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 4px; background: #f9f9f9; }
+    .set-container { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 4px; background: #f9f9f9; width: 280px; }
     .flex-row { display: flex; gap: 20px; flex-wrap: wrap; }
-    .btn { padding: 8px 12px; cursor: pointer; }
-    .btn-primary { background: #007bff; color: white; border: none; border-radius: 4px; }
+    .btn { padding: 8px 12px; cursor: pointer; border-radius: 4px; border: none; color: white; }
+    .btn-primary { background: #007bff; }
     .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-danger { background: #dc3545; color: white; border: none; border-radius: 4px; }
+    .btn-danger { background: #dc3545; }
+    .result-card { margin-top: 20px; padding: 15px; border-left: 5px solid #28a745; background: #e9ecef; font-size: 18px; }
+    input[type="number"], select { width: 100%; padding: 6px; box-sizing: border-box; }
   </style>
 </head>
 <body>
   <div id="app">
     <h1>Compose Venn Diagram</h1>
     
+    <div style="margin-bottom: 20px;">
+      <label style="font-weight: bold; margin-right: 10px;">Operación:</label>
+      <select v-model="operacion" style="padding: 5px; font-size: 16px;">
+        <option value="union">Unión (Todos los conjuntos)</option>
+        <option value="interseccion">Intersección (Solo coincidencias)</option>
+        <option value="diferencia">Diferencia (Solo Set A, excluyendo el resto)</option>
+      </select>
+    </div>
+
     <button class="btn btn-primary" @click="addSet" :disabled="querySets.length >= 3" style="margin-bottom: 20px;">
       + Add Set (Max 3)
     </button>
@@ -31,25 +42,35 @@
       <div v-for="(set, index) in querySets" :key="index" class="set-container">
         <h3>Set {{ String.fromCharCode(65 + index) }}</h3> 
         
-        <label>Question ID:</label><br>
-        <input type="number" v-model="set.questionId" style="margin-bottom: 10px;" />
-        <br>
+        <label>Pregunta:</label><br>
+        <select v-model="set.questionId" style="margin-bottom: 10px;">
+          <option value="" disabled>Seleccione una pregunta</option>
+          <option v-for="q in preguntasDisponibles" :key="q.id_pregunta" :value="q.id_pregunta">
+            Q{{ q.id_pregunta }} - {{ q.texto_pregunta }}
+          </option>
+        </select><br>
         
-        <label>Answer Value:</label><br>
-        <input type="text" v-model="set.answerValue" placeholder="e.g., Yes" style="margin-bottom: 10px;" />
-        <br>
-        
-        <button class="btn btn-danger" @click="removeSet(index)" :disabled="querySets.length <= 1">
+        <label>Respuesta (Sí/No):</label><br>
+        <select v-model="set.answerValue" style="margin-bottom: 15px;">
+          <option value="" disabled>Seleccione una opción</option>
+          <option value="Si">Sí</option>
+          <option value="No">No</option>
+        </select><br>
+
+        <button class="btn btn-danger" @click="removeSet(index)" :disabled="querySets.length <= 1" style="width: 100%;">
           Remove
         </button>
       </div>
     </div>
 
     <hr style="margin: 20px 0;">
-
     <button class="btn btn-primary" @click="fetchVennData" style="padding: 10px 20px; font-size: 16px;">
-      Generate Diagram
+      Generate Diagram & Calculate
     </button>
+
+    <div v-if="resultadoOperacion !== null" class="result-card">
+      <strong>Resultado de la {{ operacion }}:</strong> {{ resultadoOperacion }} participantes
+    </div>
 
     <div style="width: 800px; height: 500px; margin-top: 30px;">
       <canvas id="vennCanvas"></canvas>
@@ -62,56 +83,96 @@
     createApp({
       data() {
         return {
+          preguntasDisponibles: [], // Array to hold questions from DB
           querySets: [
-            { questionId: 1, answerValue: 'Si' },
-            { questionId: 2, answerValue: 'Si' }
+            { questionId: '', answerValue: '' }, // Initialize empty to force dropdown selection
+            { questionId: '', answerValue: '' }
           ],
+          operacion: 'union',
+          rawData: null, 
           chartInstance: null
         };
       },
-      methods: {
-        addSet() {
-          if (this.querySets.length < 3) {
-            this.querySets.push({ questionId: null, answerValue: '' });
+      mounted() {
+        // Fetch questions as soon as the page loads
+        this.cargarPreguntas();
+      },
+      computed: {
+        resultadoOperacion() {
+          if (!this.rawData) return null;
+
+          const val = (key) => this.rawData[key] || 0; 
+          const setsCount = this.querySets.length;
+
+          if (this.operacion === 'interseccion') {
+            if (setsCount === 1) return val('A');
+            if (setsCount === 2) return val('AB');
+            if (setsCount === 3) return val('ABC');
           }
+
+          if (this.operacion === 'union') {
+            if (setsCount === 1) return val('A');
+            if (setsCount === 2) return val('A') + val('B') - val('AB');
+            if (setsCount === 3) return val('A') + val('B') + val('C') - val('AB') - val('AC') - val('BC') + val('ABC');
+          }
+
+          if (this.operacion === 'diferencia') {
+            if (setsCount === 1) return val('A');
+            if (setsCount === 2) return val('A') - val('AB');
+            if (setsCount === 3) return val('A') - val('AB') - val('AC') + val('ABC');
+          }
+
+          return 0;
+        }
+      },
+      methods: {
+        async cargarPreguntas() {
+          try {
+            const response = await fetch('/questions');
+            this.preguntasDisponibles = await response.json();
+          } catch (error) {
+            console.error("Error loading questions:", error);
+            alert("No se pudieron cargar las preguntas desde la base de datos.");
+          }
+        },
+        addSet() {
+          if (this.querySets.length < 3) this.querySets.push({ questionId: '', answerValue: '' });
         },
         removeSet(index) {
           if (this.querySets.length > 1) {
             this.querySets.splice(index, 1);
+            this.rawData = null; 
+            if (this.chartInstance) this.chartInstance.destroy();
           }
         },
         async fetchVennData() {
+          const isValid = this.querySets.every(set => set.questionId !== '' && set.answerValue !== '');
+          if (!isValid) {
+            alert("Por favor asegúrese de seleccionar una pregunta y una respuesta para todos los conjuntos.");
+            return;
+          }
+
           try {
-            // Send the dynamic array to your Express backend
             const response = await fetch('/dashboard/data', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ sets: this.querySets })
             });
             
-            const data = await response.json();
-            this.renderChart(data);
+            this.rawData = await response.json();
+            this.renderChart(this.rawData);
           } catch (error) {
             console.error("Error fetching data:", error);
-            alert("Failed to fetch data. Ensure your backend is running.");
           }
         },
         renderChart(apiData) {
           const ctx = document.getElementById('vennCanvas').getContext('2d');
-          
-          if (this.chartInstance) {
-            this.chartInstance.destroy();
-          }
+          if (this.chartInstance) this.chartInstance.destroy();
 
-          // Safe value getter
           const val = (key) => apiData[key] || 0;
-
-          // Dynamically build the chartData array based on how many sets the user defined
           const chartData = [];
 
-          if (this.querySets.length >= 1) {
-            chartData.push({ sets: ['A'], value: val('A') });
-          }
+          if (this.querySets.length >= 1) chartData.push({ sets: ['A'], value: val('A') });
           if (this.querySets.length >= 2) {
             chartData.push({ sets: ['B'], value: val('B') });
             chartData.push({ sets: ['A', 'B'], value: val('AB') });
@@ -128,21 +189,13 @@
             data: {
               labels: chartData.map(d => d.sets.join(' ∩ ')),
               datasets: [{
-                label: 'Survey Intersections',
+                label: 'Participantes',
                 data: chartData,
                 backgroundColor: [
-                  'rgba(255, 99, 132, 0.6)',  // Red
-                  'rgba(54, 162, 235, 0.6)',  // Blue
-                  'rgba(255, 206, 86, 0.6)',  // Yellow
-                  'rgba(75, 192, 192, 0.6)',  // Green/Teal (Intersections)
-                  'rgba(153, 102, 255, 0.6)', // Purple (Intersections)
-                  'rgba(255, 159, 64, 0.6)'   // Orange (Intersections)
+                  'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 
+                  'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
                 ]
               }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false
             }
           });
         }

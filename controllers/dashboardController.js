@@ -8,24 +8,17 @@ const getDashboardData = async (req, res) => {
     }
 
     try {
-        // Parameterized inputs to prevent SQL Injection
-        const values = [
-            setA.questionId, setA.answerValue,
-            setB.questionId, setB.answerValue
-        ];
-
-        const result = await Dashboard.getData(values);
+        const result = await Dashboard.getData(sets);
 
         if (!result || result?.length === 0) return res.status(404);
 
-        res.json(result[0]);
+        res.json(result);
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Database query failed' });
     }
 }
-
 
 module.exports = {
     getDashboardData
