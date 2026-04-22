@@ -1,4 +1,4 @@
-const OfertaAcademica = require('@models/ofertaAcademica');
+const OfertaAcademica = require('@models/OfertaAcademica');
 
 const getAllOfertas = async (req, res) => {
   try {
