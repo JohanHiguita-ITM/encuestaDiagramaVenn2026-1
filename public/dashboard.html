@@ -3,16 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
+  <title>Venn Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn"></script>
 </head>
 <body>
   <div id="app">
-    <h1>Welcome to the Dashboard</h1>
-    <p>You are logged in.</p>
-    <a href="/surveys">View Surveys</a>
-    <br>
-    <a href="/admin">Admin Panel</a>
+    <h1>Compose Venn Diagram</h1>
+    
+    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+      <div style="border: 1px solid #ccc; padding: 10px;">
+        <h3>Set A</h3>
+        <label>Question ID:</label>
+        <input type="number" v-model="query.setA.questionId" />
+        <br>
+        <label>Answer Value:</label>
+        <input type="text" v-model="query.setA.answerValue" placeholder="e.g., Yes" />
+      </div>
+
+      <div style="border: 1px solid #ccc; padding: 10px;">
+        <h3>Set B</h3>
+        <label>Question ID:</label>
+        <input type="number" v-model="query.setB.questionId" />
+        <br>
+        <label>Answer Value:</label>
+        <input type="text" v-model="query.setB.answerValue" placeholder="e.g., Yes" />
+      </div>
+    </div>
+
+    <button @click="fetchVennData">Generate Diagram</button>
+
+    <div style="width: 600px; height: 400px; margin-top: 20px;">
+      <canvas id="vennCanvas"></canvas>
+    </div>
   </div>
 
   <script>
@@ -21,14 +45,56 @@
     createApp({
       data() {
         return {
-          // Add any reactive data here if needed in the future
+          query: {
+            setA: { questionId: 1, answerValue: 'Si' },
+            setB: { questionId: 2, answerValue: 'Si' }
+          },
+          chartInstance: null
         };
       },
       methods: {
-        // Add any methods here if needed in the future
-      },
-      mounted() {
-        // Add any initialization logic here if needed in the future
+        async fetchVennData() {
+          // 1. Send composition to Express backend
+          const response = await fetch('/dashboard/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.query)
+          });
+          const data = await response.json();
+          
+          // 2. Render Chart
+          this.renderChart(data);
+        },
+        renderChart(apiData) {
+          const ctx = document.getElementById('vennCanvas').getContext('2d');
+          
+          if (this.chartInstance) {
+            this.chartInstance.destroy(); // Clear old chart
+          }
+
+          // The Venn plugin expects an array of objects describing the sets and their intersections
+          const chartData = [
+            { sets: ['A'], value: apiData.a_only },
+            { sets: ['B'], value: apiData.b_only },
+            { sets: ['A', 'B'], value: apiData.intersection }
+          ];
+
+          this.chartInstance = new Chart(ctx, {
+            type: 'venn',
+            data: {
+              labels: ['Set A', 'Set B', 'Intersection'],
+              datasets: [{
+                label: 'Survey Responses',
+                data: chartData,
+                backgroundColor: [
+                  'rgba(255, 99, 132, 0.5)', // Red for A
+                  'rgba(54, 162, 235, 0.5)', // Blue for B
+                  'rgba(153, 102, 255, 0.5)' // Purple for overlap
+                ]
+              }]
+            }
+          });
+        }
       }
     }).mount('#app');
   </script>

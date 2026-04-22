@@ -2,9 +2,11 @@ const express = require('express');
 const path = require('path');
 const paths = require('@utils/paths');
 const router = express.Router();
+
 const surveyController = require('@controllers/surveyController');
 const Participant = require('@models/Participant');
 const ofertaAcademicaController = require('@controllers/ofertaAcademicaController');
+const dashboardController = require('@controllers/dashboardController');
 const db = require('@config/db');
 
 // Root route
@@ -167,5 +169,7 @@ router.post('/admin/participants', async (req, res) => {
 router.get('/dashboard', (req, res) => {
   res.sendFile(path.join(paths.public, 'dashboard.html'));
 });
+
+router.post('/dashboard/data', dashboardController.getDashboardData);
 
 module.exports = router;
