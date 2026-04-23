@@ -7,99 +7,63 @@
   <title>Complete Your Information</title>
   <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="/css/base.css">
 </head>
 
-<style>
-  #info-form {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 400px;
-  }
-
-  #info-form label {
-    align-self: flex-start;
-    margin-top: 12px;
-    margin-bottom: 4px;
-    font-weight: bold;
-  }
-
-  #info-form select {
-    width: auto;
-    height: 30px;
-  }
-
-  #info-form input {
-    width: auto;
-    height: 14px;
-    margin-bottom: 12px;
-  }
-
-  #info-form button {
-    align-self: center;
-    margin-top: 16px;
-  }
-
-  .form-item {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-</style>
-
 <body>
-  <div id="app" class="login-container">
-    <h1 style="font-style: italic;">Información Personal</h1>
+  <div id="app" class="login-screen">
+    <div class="login-container dashboard-card">
+      <h1>Información Personal</h1>
 
-    <div v-if="loading" class="loading">Loading...</div>
+      <div v-if="loading" class="loading-state">Loading...</div>
 
-    <div v-if="error" class="error">{{ error }}</div>
+      <div v-if="error" class="message error">{{ error }}</div>
 
-    <form v-if="!loading && !error" @submit.prevent="submitInfo" id="info-form">
-      <div class="form-item">
-        <label for="edad">Edad:</label>
-        <input type="number" id="edad" v-model.number="formData.edad" min="1" max="99" required>
-      </div>
+      <form v-if="!loading && !error" @submit.prevent="submitInfo" class="info-form-grid">
 
-      <div class="form-item">
-        <label for="genero">Género:</label>
-        <select id="genero" v-model="formData.genero" required>
-          <option value="Masculino">Masculino</option>
-          <option value="Femenino">Femenino</option>
-          <option value="No binario">No binario</option>
-          <option value="Prefiero no responder">Prefiero no responder</option>
-        </select>
-      </div>
+        <div class="form-item">
+          <label for="edad">Edad:</label>
+          <input type="number" id="edad" v-model.number="formData.edad" min="1" max="99" required>
+        </div>
 
-      <div class="form-item">
-        <label for="programa_academico">Programa Académico:</label>
-        <select id="programa_academico" v-model="formData.carrera" required>
-          <option value="" disabled selected>Seleccione un programa académico</option>
+        <div class="form-item">
+          <label for="genero">Género:</label>
+          <select id="genero" v-model="formData.genero" required>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="No binario">No binario</option>
+            <option value="Prefiero no responder">Prefiero no responder</option>
+          </select>
+        </div>
 
-          <optgroup v-for="grupo in ofertaAcademica" :key="grupo.categoria" :label="grupo.categoria">
-            <option v-for="programa in grupo.programas" :key="programa" :value="programa.id_programa">
-              {{ programa.nombre }}
-            </option>
-          </optgroup>
+        <div class="form-item">
+          <label for="programa_academico">Programa Académico:</label>
+          <select id="programa_academico" v-model="formData.carrera" required>
+            <option value="" disabled selected>Seleccione un programa académico</option>
+            <optgroup v-for="grupo in ofertaAcademica" :key="grupo.categoria" :label="grupo.categoria">
+              <option v-for="programa in grupo.programas" :key="programa" :value="programa.id_programa">
+                {{ programa.nombre }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
 
-        </select>
-      </div>
+        <div class="form-item">
+          <label for="semestre">Semestre:</label>
+          <input type="number" id="semestre" v-model.number="formData.semestre" min="1" max="12" required>
+        </div>
 
-      <div class="form-item">
-        <label for="semestre">Semestre:</label>
-        <input type="number" id="semestre" v-model.number="formData.semestre" min="1" max="12" required>
-      </div>
+        <button type="submit" class="btn btn-primary btn-block" :disabled="submitting">
+          {{ submitting ? 'Guardando...' : 'Guardar Informacion' }}
+        </button>
+      </form>
 
-      <button type="submit" :disabled="submitting">
-        {{ submitting ? 'Guardando...' : 'Guardar Informacion' }}
-      </button>
-    </form>
-
-    <p v-if="message" :class="{ success: message.includes('success'), error: message.includes('Error') }">
-      {{ message }}
-    </p>
+      <p v-if="message" class="message"
+        :class="{ success: message.includes('success'), error: message.includes('Error') }">
+        {{ message }}
+      </p>
+    </div>
   </div>
-
   <script>
     const { createApp } = Vue;
 
@@ -129,7 +93,7 @@
               console.error(err);
             });
 
-          this.formData = {...this.formData, ...data.participant };
+          this.formData = { ...this.formData, ...data.participant };
         },
 
         async getOfertaAcademica() {

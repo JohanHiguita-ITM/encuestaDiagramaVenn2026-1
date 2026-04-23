@@ -1,29 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="./css/base.css">
+  <style>
+    /* =========================================
+   Login Specific Styles
+   ========================================= */
+
+    /* Centrar el login en toda la pantalla */
+    .login-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+      /* Para que no pegue al fondo */
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      /* Tamaño ideal para un login */
+    }
+  </style>
 </head>
+
 <body>
-  <div id="app" class="login-container">
-    <h1>Login</h1>
-    <form @submit.prevent="submitLogin">
-      <label for="codigo">Código de participante:</label>
-      <input
-        type="text"
-        id="codigo"
-        v-model.trim="codigo"
-        required>
-      <button type="submit" :disabled="!codigo.trim()">
-        Ingresar
-      </button>
-    </form>
-    <p v-if="message" :class="{ error: message.includes('Por favor') }">
-      {{ message }}
-    </p>
+  <div id="app" class="login-screen">
+    <div class="login-container dashboard-card">
+      <h1>
+        <span>Login</span>
+      </h1>
+
+      <form @submit.prevent="submitLogin">
+        <label for="codigo">Código de participante</label>
+        <input type="text" id="codigo" v-model.trim="codigo" placeholder="Introduce tu código" required>
+
+        <button type="submit" class="btn btn-primary btn-block" :disabled="!codigo.trim()">
+          Ingresar
+        </button>
+      </form>
+
+      <p v-if="message" class="message" :class="{ error: message.includes('Por favor') }">
+        {{ message }}
+      </p>
+    </div>
   </div>
 
   <script>
@@ -52,11 +78,11 @@
             body: JSON.stringify({ codigo: this.codigo.trim() })
           }).then(async (response) => {
             if (response.ok) {
-              const {redirect} = await response.json();
- 
+              const { redirect } = await response.json();
+
               if (redirect) {
-               window.location.href = redirect;
-              } 
+                window.location.href = redirect;
+              }
             }
           })
         }
@@ -78,4 +104,5 @@
     }).mount('#app');
   </script>
 </body>
+
 </html>

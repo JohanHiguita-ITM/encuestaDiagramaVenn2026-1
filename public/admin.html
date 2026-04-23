@@ -1,73 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel</title>
   <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="./css/base.css">
   <style>
-    table {
+    /* Contenedor principal del admin */
+    .login-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+    }
+
+    /* Tabla de participantes */
+    #participants-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
+
+    #participants-table th,
+    #participants-table td {
+      border: 1px solid var(--border-color);
+      padding: 10px;
       text-align: left;
     }
-    th {
-      background-color: #f2f2f2;
+
+    #participants-table th {
+      background-color: var(--accent-purple);
+      color: white;
     }
-    .success {
-      color: green;
+
+    /* Badge para el código (opcional, se ve muy Pro) */
+    .code-badge {
+      color: var(--accent-purple);
+      font-family: monospace;
+      font-weight: 600;
     }
-    .error {
-      color: red;
+
+    /* Estados de carga y mensajes */
+    .loading-state {
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 40px;
+      font-style: italic;
     }
-    .login-container{
-      width: auto;
-      margin: 50px auto;
+
+    .message.success {
+      color: var(--accent-green);
+      background: rgba(144, 242, 169, 0.1);
+      padding: 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
-<body>
-  <div id="app" class="login-container">
-    <h1>Admin Panel</h1>
-    <button @click="createParticipant" :disabled="creating" id="new-participant">
-      {{ creating ? 'Creating...' : 'Create new participant' }}
-    </button>
-    <p v-if="message" :class="{ success: message.includes('created'), error: !message.includes('created') }">
-      {{ message }}
-    </p>
 
-    <section>
-      <h2>Participants</h2>
-      <div v-if="loading" class="loading">Loading participants...</div>
-      <div v-if="error && !loading" class="error">{{ error }}</div>
-      <table v-if="!loading && !error" id="participants-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Code</th>
-            <th>Edad</th>
-            <th>Género</th>
-            <th>Carrera</th>
-            <th>Semestre</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="participant in participants" :key="participant.id_participante">
-            <td>{{ participant.id_participante }}</td>
-            <td>{{ participant.codigo || '' }}</td>
-            <td>{{ participant.edad || '' }}</td>
-            <td>{{ participant.genero || '' }}</td>
-            <td>{{ participant.carrera || '' }}</td>
-            <td>{{ participant.semestre || '' }}</td>
-          </tr>
-        </tbody>
-      </table>
+<body>
+  <div id="app" class="dashboard-grid">
+    <div class="dashboard-card" style="grid-column: 1 / -1;">
+      <div class="card-header">
+        <h1>Admin Panel</h1>
+        <button @click="createParticipant" :disabled="creating" class="btn btn-primary" id="new-participant">
+          {{ creating ? 'Creating...' : 'Create new participant' }}
+        </button>
+      </div>
+
+      <p v-if="message" class="message"
+        :class="{ success: message.includes('created'), error: !message.includes('created') }">
+        {{ message }}
+      </p>
+    </div>
+
+    <section class="dashboard-card" style="grid-column: 1 / -1;">
+      <div class="card-header">
+        <h2>Participants</h2>
+      </div>
+
+      <div v-if="loading" class="loading-state">Loading participants...</div>
+      <div v-if="error && !loading" class="message error">{{ error }}</div>
+
+      <div class="table-container" v-if="!loading && !error">
+        <table id="participants-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Code</th>
+              <th>Edad</th>
+              <th>Género</th>
+              <th>Carrera</th>
+              <th>Semestre</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="participant in participants" :key="participant.id_participante">
+              <td>{{ participant.id_participante }}</td>
+              <td class="code-badge">{{ participant.codigo || '—' }}</td>
+              <td>{{ participant.edad || '—' }}</td>
+              <td>{{ participant.genero || '—' }}</td>
+              <td>{{ participant.carrera || '—' }}</td>
+              <td>{{ participant.semestre || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 
@@ -133,4 +172,5 @@
     }).mount('#app');
   </script>
 </body>
+
 </html>

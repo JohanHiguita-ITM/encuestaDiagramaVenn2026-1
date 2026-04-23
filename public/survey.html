@@ -7,178 +7,277 @@
   <title>Survey</title>
   <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="/css/base.css">
   <style>
-    .progress-bar {
-      width: 100%;
-      background-color: #f0f0f0;
-      border-radius: 5px;
-      margin-bottom: 20px;
+    /* =========================================
+       Survey Specific Styles & Scrollbar
+       ========================================= */
+
+    /* Custom Scrollbar for the Card */
+    .dashboard-card::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .dashboard-card::-webkit-scrollbar-track {
+      background: var(--bg-base);
+      border-radius: 0 var(--border-radius-card) var(--border-radius-card) 0;
+    }
+
+    .dashboard-card::-webkit-scrollbar-thumb {
+      background: var(--bg-input);
+      border-radius: 10px;
+      border: 2px solid var(--bg-card);
+    }
+
+    .dashboard-card::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-purple);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      flex-grow: 1;
+      height: 6px;
+      background-color: var(--bg-input);
+      border-radius: 10px;
+      margin-left: 20px;
+      overflow: hidden;
     }
 
     .progress-fill {
-      height: 20px;
-      background-color: #4CAF50;
-      border-radius: 5px;
-      transition: width 0.3s;
+      height: 100%;
+      background-color: var(--accent-green);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Tabs Styling */
     .tabs {
       display: flex;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      /* Hide for Firefox */
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
     }
 
     .tab-button {
-      flex: 1;
-      padding: 10px;
-      background-color: #ddd;
-      border: none;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      padding: 8px 16px;
       cursor: pointer;
-      text-align: center;
+      font-family: var(--font-main);
+      font-size: 13px;
+      white-space: nowrap;
+      border-radius: var(--border-radius-element);
+      transition: all 0.2s;
     }
 
     .tab-button.active {
-      background-color: #bbb;
+      background: var(--bg-input);
+      color: var(--accent-purple);
+      border-color: var(--border-color);
+      font-weight: 600;
     }
 
-    .category-questions {
-      margin-bottom: 20px;
-    }
-
-    .question {
+    /* Question Cards */
+    .question-item {
+      background: var(--bg-input);
+      padding: 20px;
+      border-radius: var(--border-radius-element);
       margin-bottom: 15px;
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
-    .button-container {
+    .question-item:focus-within {
+      border-color: var(--accent-purple);
+      transform: translateX(4px);
+    }
+
+    .question-text {
+      margin-bottom: 15px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    /* Radio Buttons */
+    .options-group {
       display: flex;
-      flex-direction: column;
+      gap: 24px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
       gap: 10px;
-      margin-top: 20px;
-      justify-content: space-between;
-    }
-
-    .nav-button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
       cursor: pointer;
-      border-radius: 5px;
-    }
-    
-    .width-full {
-      width: 100%;
+      color: var(--text-secondary);
+      transition: color 0.2s;
     }
 
-    .nav-button:hover {
-      background-color: #45a049;
+    .radio-label:hover {
+      color: var(--text-primary);
     }
 
-    .nav-button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
+    .radio-label input[type="radio"] {
+      accent-color: var(--accent-green);
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    /* Pagination Dots */
+    .dots-container {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .dot-button {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg-input);
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+
+    .dot-active {
+      background: var(--accent-green);
+      width: 20px;
+      border-radius: 10px;
+    }
+
+    /* Footer & Navigation */
+    .survey-footer {
+      margin-top: 30px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
     }
 
     .page-navigation {
       display: flex;
-      gap: 10px;
-      margin-top: 15px;
-      justify-content: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
 
-    .dots-container {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 2rem;
-      justify-content: center;
-      flex-wrap: wrap;
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
     }
 
-    .dot-button {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid #4CAF50;
-      background-color: #f0f0f0;
-      cursor: pointer;
-      padding: 0;
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--border-color);
     }
 
-    .dot-answered {
-      background-color: #4CAF50;
+    .category-title {
+      font-size: 20px;
+      color: var(--accent-purple);
+      margin-bottom: 20px;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
     }
   </style>
 </head>
 
 <body>
-  <div id="app" class="login-container">
-    <h1>Encuesta</h1>
-    <div class="progress-bar">
-      <div class="progress-fill" :style="{ width: progress + '%' }"></div>
-    </div>
+  <div id="app" class="dashboard-grid">
+    <div class="dashboard-card"
+      style="grid-column: 1 / -1; max-width: 800px; margin: 0 auto; width: 100%; max-height: 85vh; overflow-y: auto;">
 
-    <div v-if="loading" class="loading">Cargando encuesta...</div>
-
-    <div v-if="error" class="error">{{ error }}</div>
-
-    <div v-if="!loading && !error">
-      <div class="tabs">
-        <button v-for="(category, index) in categories" :key="category.id" class="tab-button"
-          :class="{ active: index === currentCategoryIndex }" @click="showCategory(index)">
-          {{ category.nombre }}
-        </button>
+      <div class="card-header">
+        <h1>Encuesta</h1>
+        <div class="progress-container">
+          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+        </div>
       </div>
 
-      <form @submit.prevent="null">
-        <div class="category-questions">
-          <h2>{{ currentCategory.nombre }}</h2>
+      <div v-if="loading" class="loading-state">
+        <p>Cargando encuesta...</p>
+      </div>
 
-          <p v-if="totalPages > 1" style="text-align: center; color: #666; margin-bottom: 15px;">
-            Página {{ currentPageInCategory + 1 }} de {{ totalPages }}
-          </p>
+      <div v-if="error" class="message error">{{ error }}</div>
 
-          <div v-if="totalPages > 1" class="dots-container">
-            <button v-for="(question, idx) in totalPages" :key="idx-currentPageInCategory" type="button"
-              class="dot-button" :class="{ 'dot-answered': currentPageInCategory === idx }" @click="showPage(idx)">
-            </button>
+      <div v-if="!loading && !error">
+        <div class="tabs">
+          <button v-for="(category, index) in categories" :key="category.id" class="tab-button"
+            :class="{ active: index === currentCategoryIndex }" @click="showCategory(index)">
+            {{ category.nombre }}
+          </button>
+        </div>
 
-            <div v-if="totalPages > 1" class="page-navigation">
-              <button type="button" class="nav-button" @click="prevPage" :disabled="currentPageInCategory === 0">
-                ← Página Anterior
-              </button>
-              <button type="button" class="nav-button" @click="nextPage"
-                :disabled="currentPageInCategory >= totalPages - 1">
-                Página Siguiente →
-              </button>
+        <form @submit.prevent="null">
+          <div class="category-questions">
+            <h2 class="category-title">{{ currentCategory.nombre }}</h2>
+
+            <div v-if="totalPages > 1" class="pagination-header">
+              <label>Página {{ currentPageInCategory + 1 }} de {{ totalPages }}</label>
+              <div class="dots-container">
+                <button v-for="(page, idx) in totalPages" :key="idx" type="button" class="dot-button"
+                  :class="{ 'dot-active': currentPageInCategory === idx }" @click="showPage(idx)">
+                </button>
+              </div>
+            </div>
+
+            <div v-for="question in currentPageQuestions" :key="question.id" class="question-item">
+              <p class="question-text">{{ question.texto }}</p>
+              <div class="options-group">
+                <label class="radio-label">
+                  <input type="radio" :name="'q' + question.id" value="Sí" v-model="responses[question.id]">
+                  <span>Sí</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" :name="'q' + question.id" value="No" v-model="responses[question.id]">
+                  <span>No</span>
+                </label>
+              </div>
             </div>
           </div>
 
-          <div v-for="question in currentPageQuestions" :key="question.id" class="question">
-            <p>{{ question.texto }}</p>
-            <label>
-              <input type="radio" :name="'q' + question.id" value="Sí" v-model="responses[question.id]">
-              Sí
-            </label>
-            <label>
-              <input type="radio" :name="'q' + question.id" value="No" v-model="responses[question.id]">
-              No
-            </label>
+          <div class="survey-footer">
+            <div class="page-navigation" v-if="totalPages > 1">
+              <button type="button" class="btn btn-secondary" @click="prevPage" :disabled="currentPageInCategory === 0">
+                Anterior
+              </button>
+              <button type="button" class="btn btn-secondary" @click="nextPage"
+                :disabled="currentPageInCategory >= totalPages - 1">
+                Siguiente
+              </button>
+            </div>
+
+            <div class="action-buttons">
+              <button v-if="currentCategoryIndex < categories.length - 1" @click="nextCategory"
+                class="btn btn-primary btn-block" :disabled="!isCurrentCategoryComplete">
+                Siguiente Categoría
+              </button>
+
+              <button v-if="isFormValid" @click="submitResponses" class="btn btn-primary btn-block">
+                Enviar Respuestas
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
+      </div>
 
-        <div class="button-container">
-          <button @click="nextCategory" class="nav-button width-full" :disabled="!isCurrentCategoryComplete" v-if="currentCategoryIndex < categories.length - 1">
-            Siguiente Categoría
-          </button>
-          <button @click="submitResponses" class="nav-button width-full" v-if="isFormValid">
-            Enviar Respuestas
-          </button>
-        </div>
-      </form>
+      <p v-if="message" class="message" :class="{ error: message.includes('Error') }">
+        {{ message }}
+      </p>
     </div>
-
-    <p v-if="message" :class="{ success: message.includes('exitosamente'), error: message.includes('Error') }">
-      {{ message }}
-    </p>
   </div>
 
   <script>
