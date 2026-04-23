@@ -11,125 +11,297 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn"></script>
 
   <style>
+    /* =========================================
+       CSS Variables (Theming)
+       ========================================= */
+    :root {
+      --bg-base: #0f0f11;
+      --bg-card: #1c1c1e;
+      --bg-input: #2a2a2d;
+
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+
+      --accent-green: #90f2a9;
+      --accent-green-hover: #7ce396;
+      --accent-purple: #b59af6;
+      --danger-red: #ff5c5c;
+
+      --border-color: #333336;
+      --border-radius-card: 20px;
+      --border-radius-element: 10px;
+
+      --font-main: 'Inter', sans-serif;
+    }
+
+    /* =========================================
+       Global Styles
+       ========================================= */
     body {
-      font-family: sans-serif;
-      padding: 20px;
+      font-family: var(--font-main);
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 30px;
+      box-sizing: border-box;
     }
 
-    .set-container {
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 4px;
-      background: #f9f9f9;
-      width: 280px;
+    h1,
+    h2,
+    h3 {
+      margin-top: 0;
+      font-weight: 600;
     }
 
-    .flex-row {
+    h1 {
+      font-size: 24px;
+      margin-bottom: 24px;
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
     }
 
+    h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+
+    /* =========================================
+       Reusable Dashboard Components
+       ========================================= */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .dashboard-card {
+      background: var(--bg-card);
+      border-radius: var(--border-radius-card);
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    /* =========================================
+       Form Elements
+       ========================================= */
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 15px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-element);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    select:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent-purple);
+    }
+
+    /* =========================================
+       Buttons
+       ========================================= */
     .btn {
-      padding: 8px 12px;
+      padding: 12px 20px;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 30px;
+      /* Pill shape */
       border: none;
-      color: white;
+      font-family: var(--font-main);
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn-primary {
-      background: #007bff;
+      background: var(--accent-green);
+      color: #000000;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-green-hover);
+      transform: translateY(-1px);
     }
 
     .btn-primary:disabled {
-      background: #ccc;
+      background: var(--border-color);
+      color: var(--text-secondary);
       cursor: not-allowed;
     }
 
     .btn-danger {
-      background: #dc3545;
+      background: transparent;
+      color: var(--danger-red);
+      border: 1px solid var(--danger-red);
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 92, 92, 0.1);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* =========================================
+       Specific Elements
+       ========================================= */
+    .set-container {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--border-color);
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: var(--border-radius-element);
+      position: relative;
     }
 
     .result-card {
-      margin-top: 20px;
-      padding: 15px;
-      border-left: 5px solid #28a745;
-      background: #e9ecef;
-      font-size: 18px;
+      background: linear-gradient(145deg, var(--accent-purple) 0%, #8561db 100%);
+      color: #ffffff;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
     }
 
-    input[type="number"],
-    select {
+    .result-value {
+      font-size: 48px;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    .chart-container {
       width: 100%;
-      padding: 6px;
-      box-sizing: border-box;
+      height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
 </head>
 
 <body>
   <div id="app">
-    <h1>Compose Venn Diagram</h1>
+    <h1>
+      Diagrama de Venn Interactivo para Análisis de Encuestas
+    </h1>
 
-    <button class="btn btn-primary" @click="addSet" :disabled="querySets.length >= 3" style="margin-bottom: 20px;">
-      + Add Set (Max 3)
-    </button>
+    <div class="dashboard-grid">
 
-    <div class="flex-row">
-      <div v-for="(set, index) in querySets" :key="index" class="set-container">
-        <h3>Conjunto {{ String.fromCharCode(65 + index) }}</h3>
-
-        <label>Tipo de Filtro:</label>
-        <select v-model="set.type">
-          <option value="pregunta">Pregunta de Encuesta</option>
-          <option value="carrera">Carrera Académica</option>
-          <option value="genero">Género</option>
-          <option value="semestre">Semestre</option>
-        </select>
-
-        <div v-if="set.type === 'pregunta'">
-          <select v-model="set.id_pregunta">
-            <option v-for="q in preguntasDisponibles" :value="q.id_pregunta">{{ q.texto_pregunta }}</option>
-          </select>
-          <select v-model="set.valor">
-            <option value="Si">Sí</option>
-            <option value="No">No</option>
-          </select>
+      <div class="dashboard-card" style="grid-column: span 1;">
+        <div class="card-header">
+          <h3>Seleccione Conjuntos</h3>
+          <button class="btn btn-primary" style="padding: 8px 14px; font-size: 12px;" @click="addSet"
+            :disabled="querySets.length >= 3">
+            Agregar
+          </button>
         </div>
 
-        <div v-if="set.type === 'carrera'">
-          <select v-model="set.id_programa">
-            <option v-for="c in carrerasDisponibles" :value="c.id_programa">{{ c.nombre }}</option>
+        <div v-for="(set, index) in querySets" :key="index" class="set-container">
+          <div class="card-header" style="margin-bottom: 10px;">
+            <h3 style="margin: 0; color: var(--accent-purple);">Conjunto {{ String.fromCharCode(65 + index) }}</h3>
+            <button class="btn btn-danger" @click="removeSet(index)" v-if="querySets.length > 1">Remove</button>
+          </div>
+
+          <label>Tipo de Filtro</label>
+          <select v-model="set.type">
+            <option value="" disabled>Seleccione un tipo de filtro</option>
+            <option value="pregunta">Pregunta de Encuesta</option>
+            <option value="carrera">Programa Académico</option>
+            <option value="genero">Género</option>
+            <option value="semestre">Semestre</option>
           </select>
+
+          <div v-if="set.type === 'pregunta'">
+            <label>Pregunta</label>
+            <select v-model="set.id_pregunta">
+              <option v-for="q in preguntasDisponibles" :value="q.id_pregunta">{{ q.texto_pregunta }}</option>
+            </select>
+            <label>Respuesta</label>
+            <select v-model="set.valor">
+              <option value="Si">Si</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div v-if="set.type === 'carrera'">
+            <label>Programa</label>
+            <select v-model="set.id_programa">
+              <option v-for="c in carrerasDisponibles" :value="c.id_programa">{{ c.nombre }}</option>
+            </select>
+          </div>
+
+          <div v-if="set.type === 'genero'">
+            <label>Selección de Género</label>
+            <select id="genero" v-model="set.genero" required>
+              <option value="Masculino">Hombre</option>
+              <option value="Femenino">Mujer</option>
+              <option value="No binario">No binario</option>
+              <option value="Prefiero no responder">Prefiero no responder</option>
+            </select>
+          </div>
+
+          <div v-if="set.type === 'semestre'">
+            <label>Número de Semestre</label>
+            <input type="number" v-model="set.semestre" min="1" max="10" placeholder="e.g., 5" required>
+          </div>
         </div>
 
-        <div v-if="set.type === 'genero'">
-          <select id="genero" v-model="set.genero" required>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
-            <option value="No binario">No binario</option>
-            <option value="Prefiero no responder">Prefiero no responder</option>
-          </select>
+        <button class="btn btn-primary btn-block" @click="getDashboardData" style="margin-top: 10px;">
+          Generar Diagrama
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+
+        <div v-if="resultadoOperacion !== null" class="dashboard-card result-card">
+          <span style="font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+            Participantes:
+          </span>
+          <div class="result-value">{{ resultadoOperacion }}</div>
+          <span style="font-size: 12px; opacity: 0.8;">Basado en la configuración actual de filtros</span>
         </div>
-        <div v-if="set.type === 'semestre'">
-          <input type="number" v-model="set.semestre" min="1" max="10" placeholder="Semestre (1-10)" required>
+
+        <div class="dashboard-card" style="flex-grow: 1;">
+          <div class="chart-container">
+            <canvas id="vennCanvas"></canvas>
+          </div>
         </div>
       </div>
-    </div>
-
-    <hr style="margin: 20px 0;">
-    <button class="btn btn-primary" @click="getDashboardData" style="padding: 10px 20px; font-size: 16px;">
-      Generate Diagram & Calculate
-    </button>
-
-    <div v-if="resultadoOperacion !== null" class="result-card">
-      <strong>Resultado de la {{ operacion }}:</strong> {{ resultadoOperacion }} participantes
-    </div>
-
-    <div style="width: 800px; height: 500px; margin-top: 30px;">
-      <canvas id="vennCanvas"></canvas>
     </div>
   </div>
 
@@ -261,17 +433,30 @@
           const val = (key) => apiData[key] || 0;
           const chartData = [];
 
+          // 1. PRIMERO agregamos los conjuntos principales para que formen los 3 círculos externos
           if (this.querySets.length >= 1) chartData.push({ sets: ['A'], value: val('A') });
+          if (this.querySets.length >= 2) chartData.push({ sets: ['B'], value: val('B') });
+          if (this.querySets.length === 3) chartData.push({ sets: ['C'], value: val('C') });
+
+          // 2. DESPUÉS agregamos todas las intersecciones posibles
           if (this.querySets.length >= 2) {
-            chartData.push({ sets: ['B'], value: val('B') });
             chartData.push({ sets: ['A', 'B'], value: val('AB') });
           }
           if (this.querySets.length === 3) {
-            chartData.push({ sets: ['C'], value: val('C') });
             chartData.push({ sets: ['A', 'C'], value: val('AC') });
             chartData.push({ sets: ['B', 'C'], value: val('BC') });
             chartData.push({ sets: ['A', 'B', 'C'], value: val('ABC') });
           }
+
+          const colorPalette = [
+            'rgba(167, 243, 208, 0.9)',   // A: Pastel Green
+            'rgba(233, 213, 255, 0.9)',   // B: Pastel Purple
+            'rgba(191, 219, 254, 0.9)',   // C: Pastel Blue
+            'rgba(200, 228, 231, 0.7)',   // Intersección A ∩ B (Soft teal mix)
+            'rgba(179, 231, 231, 0.7)',   // Intersección A ∩ C (Soft cyan mix)
+            'rgba(212, 216, 255, 0.7)',   // Intersección B ∩ C (Soft periwinkle mix)
+            'rgba(243, 244, 246, 0.8)'    // Intersección A ∩ B ∩ C (Off-white/Light gray)
+          ];
 
           this.chartInstance = new Chart(ctx, {
             type: 'venn',
@@ -280,11 +465,34 @@
               datasets: [{
                 label: 'Participantes',
                 data: chartData,
-                backgroundColor: [
-                  'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
-                  'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
-                ]
+                backgroundColor: colorPalette,
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1.5
               }]
+            },
+            options: {
+              // 1. Changes the color of the numbers and set labels (A, B, C)
+              color: '#ffffff',
+
+              // 2. Controls the size and style of the numbers inside the chart
+              font: {
+                size: 32,          // <-- Increase or decrease this value (default is usually 12)
+                weight: 'bold',    // <-- Makes the numbers thicker and easier to read
+                family: "'Inter', sans-serif" // Matches your dashboard's modern font
+              },
+
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#ffffff',
+                    // You can optionally control the legend text size separately here
+                    font: {
+                      size: 14,
+                      weight: 'normal'
+                    }
+                  }
+                }
+              }
             }
           });
         }
