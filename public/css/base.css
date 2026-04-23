@@ -1,265 +1,134 @@
 /* =========================================
-CSS Variables (Theming)
-========================================= */
+   CSS Variables (Theming)
+   ========================================= */
 :root {
     --bg-base: #0f0f11;
     --bg-card: #1c1c1e;
     --bg-input: #2a2a2d;
-
     --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
-
     --accent-green: #90f2a9;
     --accent-green-hover: #7ce396;
     --accent-purple: #b59af6;
     --danger-red: #ff5c5c;
-
     --border-color: #333336;
     --border-radius-card: 20px;
     --border-radius-element: 10px;
-
     --font-main: 'Inter', sans-serif;
 }
 
 /* =========================================
-Global Styles
-========================================= */
+   Global Styles (Mobile Base)
+   ========================================= */
 body {
     font-family: var(--font-main);
     background-color: var(--bg-base);
     color: var(--text-primary);
     margin: 0;
-    padding: 30px;
+    padding: 15px; /* Reduced for small screens */
     box-sizing: border-box;
+    line-height: 1.5;
 }
 
-h1,
-h2,
-h3 {
-    margin-top: 0;
-    font-weight: 600;
+/* Tablet & Desktop Adjustments */
+@media (min-width: 768px) {
+    body {
+        padding: 30px;
+    }
 }
 
 h1 {
-    font-size: 24px;
-    margin-bottom: 24px;
+    font-size: 20px; /* Smaller for mobile */
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-h3 {
-    font-size: 16px;
-    margin-bottom: 15px;
-    color: var(--text-primary);
+@media (min-width: 768px) {
+    h1 {
+        font-size: 24px;
+        margin-bottom: 24px;
+    }
 }
 
 /* =========================================
-Reusable Dashboard Components
-========================================= */
+   Layout (Mobile First)
+   ========================================= */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 15px;
     max-width: 1400px;
     margin: 0 auto;
+}
+
+/* Desktop Grid Layout */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
 }
 
 .dashboard-card {
     background: var(--bg-card);
     border-radius: var(--border-radius-card);
-    padding: 24px;
+    padding: 16px; /* Tighter padding on mobile */
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+@media (min-width: 768px) {
+    .dashboard-card {
+        padding: 24px;
+    }
 }
 
 /* =========================================
-Form Elements
-========================================= */
-label {
-    display: block;
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-select,
-input[type="number"] {
+   Form Elements & Buttons
+   ========================================= */
+input[type="text"],
+input[type="number"],
+select {
     width: 100%;
-    padding: 12px 14px;
+    padding: 12px;
     margin-bottom: 15px;
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-element);
     color: var(--text-primary);
-    font-family: var(--font-main);
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s ease;
+    font-size: 16px; /* 16px prevents iOS zoom on focus */
+    appearance: none;
     box-sizing: border-box;
 }
 
-select:focus,
-input[type="number"]:focus {
-    border-color: var(--accent-purple);
-}
-
-/* =========================================
-Buttons
-========================================= */
 .btn {
-    padding: 12px 20px;
-    cursor: pointer;
+    width: 100%; /* Full width buttons are better for thumbs on mobile */
+    padding: 14px 20px;
     border-radius: 30px;
-    /* Pill shape */
     border: none;
-    font-family: var(--font-main);
     font-weight: 600;
-    font-size: 14px;
+    cursor: pointer;
     transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.btn-primary {
-    background: var(--accent-green);
-    color: #000000;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: var(--accent-green-hover);
-    transform: translateY(-1px);
-}
-
-.btn-primary:disabled {
-    background: var(--border-color);
-    color: var(--text-secondary);
-    cursor: not-allowed;
-}
-
-.btn-danger {
-    background: transparent;
-    color: var(--danger-red);
-    border: 1px solid var(--danger-red);
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 8px;
-}
-
-.btn-danger:hover {
-    background: rgba(255, 92, 92, 0.1);
-}
-
-.btn-block {
-    width: 100%;
-}
-
-/* Extender inputs para incluir texto */
-input[type="text"],
-select,
-input[type="number"] {
-    width: 100%;
-    padding: 12px 14px;
-    margin-bottom: 20px;
-    /* Un poco más de aire */
-    background-color: var(--bg-input);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-element);
-    color: var(--text-primary);
-    font-family: var(--font-main);
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s ease;
-    box-sizing: border-box;
-}
-
-input[type="text"]:focus {
-    border-color: var(--accent-purple);
-}
-
-/* Mensajes de Feedback */
-.message {
-    margin-top: 20px;
-    font-size: 14px;
-    text-align: center;
-    color: var(--accent-green);
-}
-
-.message.error {
-    color: var(--danger-red);
+@media (min-width: 600px) {
+    .btn {
+        width: auto; /* Return to natural width on larger screens */
+    }
 }
 
 /* =========================================
-Tables & Data Display
-========================================= */
-
-.table-container {
-    overflow-x: auto;
-    /* Para que sea responsivo */
-    margin-top: 10px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 14px;
-}
-
-th {
-    color: var(--text-secondary);
-    font-weight: 500;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color);
-    text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-}
-
-td {
-    padding: 16px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-tr:hover td {
-    background-color: rgba(255, 255, 255, 0.02);
-}
-
- /* =========================================
-   Personal Info Form Adjustments
+   Scrollbar (Themed)
    ========================================= */
-
-  .info-form-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    /* Espacio uniforme entre campos */
-  }
-
-  /* Estilo para los grupos de opciones en el select */
-  optgroup {
-    background-color: var(--bg-card);
-    color: var(--accent-purple);
-    font-weight: 600;
-    font-style: normal;
-  }
-
-  option {
-    background-color: var(--bg-input);
-    color: var(--text-primary);
-  }
-
-  /* Ajuste para que los labels no tengan tanto margen superior */
-  .form-item label {
-    margin-top: 5px;
-    font-weight: 500;
-  }
+.dashboard-card::-webkit-scrollbar {
+    width: 6px;
+}
+.dashboard-card::-webkit-scrollbar-thumb {
+    background: var(--bg-input);
+    border-radius: 10px;
+}
+.dashboard-card::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-purple);
+}
