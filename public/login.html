@@ -1,31 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
-  <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
-  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="/css/base.css">
   <style>
     /* =========================================
-   Login Specific Styles
-   ========================================= */
+       Login Specific Styles (Mobile First)
+       ========================================= */
 
     /* Centrar el login en toda la pantalla */
     .login-screen {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 80vh;
-      /* Para que no pegue al fondo */
+      min-height: 100dvh;
+      /* 100dvh es mejor en móviles para ignorar la barra de navegación */
+      margin: -15px;
+      /* Compensa el padding del body en base.css para pantallas pequeñas */
+      padding: 15px;
+      box-sizing: border-box;
+    }
+
+    @media (min-width: 768px) {
+      .login-screen {
+        margin: -30px;
+        /* Compensa el padding del body en desktop */
+        padding: 30px;
+      }
     }
 
     .login-container {
       width: 100%;
       max-width: 400px;
-      /* Tamaño ideal para un login */
+      /* Tamaño ideal para mantener legibilidad */
+    }
+
+    /* Estilos para las etiquetas del formulario */
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Integración de botones con las variables de base.css */
+    .btn-primary {
+      background-color: var(--accent-purple);
+      color: var(--bg-base);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-green);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Mensajes de error y estado */
+    .message {
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .message.error {
+      color: var(--danger-red);
+      font-weight: 600;
     }
   </style>
 </head>
@@ -41,12 +87,13 @@
         <label for="codigo">Código de participante</label>
         <input type="text" id="codigo" v-model.trim="codigo" placeholder="Introduce tu código" required>
 
-        <button type="submit" class="btn btn-primary btn-block" :disabled="!codigo.trim()">
+        <button type="submit" class="btn btn-primary" :disabled="!codigo.trim()">
           Ingresar
         </button>
       </form>
 
-      <p v-if="message" class="message" :class="{ error: message.includes('Por favor') }">
+      <p v-if="message" class="message"
+        :class="{ error: message.includes('Por favor') || message.includes('no encontrado') }">
         {{ message }}
       </p>
     </div>
@@ -83,12 +130,18 @@
               if (redirect) {
                 window.location.href = redirect;
               }
+            } else {
+              // Opcional: Manejo de errores genéricos si el status no es OK
+              this.message = 'Error en la conexión. Intenta nuevamente.';
             }
-          })
+          }).catch(() => {
+            this.message = 'Error de red. Por favor revisa tu conexión.';
+          });
         }
       },
       mounted() {
         const urlParams = new URLSearchParams(window.location.search);
+
         const error = urlParams.get('error');
         if (error) {
           this.message = 'Código de participante no encontrado. Por favor intenta nuevamente.';
@@ -97,9 +150,11 @@
         const code = urlParams.get('code');
         if (code) {
           this.codigo = code;
+          // Pequeño timeout para permitir que el DOM se actualice antes de enviar
+          setTimeout(() => {
+            this.submitLogin();
+          }, 100);
         }
-
-        this.submitLogin();
       }
     }).mount('#app');
   </script>

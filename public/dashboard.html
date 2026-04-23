@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="UTF-8">
@@ -9,21 +9,53 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn"></script>
-  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="/css/base.css">
 
   <style>
-  /* =========================================
-      Dashboard Page Styles
-      ========================================= */
+    /* =========================================
+       Dashboard Page Styles (Mobile First)
+       ========================================= */
     .set-container {
       background: rgba(255, 255, 255, 0.02);
       border: 1px dashed var(--border-color);
-      padding: 20px;
+      padding: 16px;
       margin-bottom: 15px;
       border-radius: var(--border-radius-element);
       position: relative;
     }
 
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 20px;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-red);
+      color: white;
+    }
+
+    /* Labels para los formularios dentro de los conjuntos */
+    .set-container label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Tarjeta de resultados numéricos */
     .result-card {
       background: linear-gradient(145deg, var(--accent-purple) 0%, #8561db 100%);
       color: #ffffff;
@@ -33,20 +65,49 @@
       justify-content: center;
       align-items: center;
       text-align: center;
+      padding: 30px 20px;
     }
 
     .result-value {
-      font-size: 48px;
+      font-size: 42px;
       font-weight: 700;
       margin: 10px 0;
+      line-height: 1.1;
     }
 
     .chart-container {
       width: 100%;
-      height: 400px;
+      height: 350px;
+      /* Un poco más pequeño en móviles */
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    .visualization-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Tablet & Desktop Adjustments */
+    @media (min-width: 768px) {
+      .visualization-panel {
+        grid-column: span 2;
+        gap: 20px;
+      }
+
+      .chart-container {
+        height: 400px;
+      }
+
+      .result-value {
+        font-size: 48px;
+      }
+
+      .card-header h3 {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
@@ -59,19 +120,18 @@
 
     <div class="dashboard-grid">
 
-      <div class="dashboard-card" style="grid-column: span 1;">
+      <div class="dashboard-card controls-panel">
         <div class="card-header">
           <h3>Seleccione Conjuntos</h3>
-          <button class="btn btn-primary" style="padding: 8px 14px; font-size: 12px;" @click="addSet"
-            :disabled="querySets.length >= 3">
+          <button class="btn btn-primary btn-sm" @click="addSet" :disabled="querySets.length >= 3">
             Agregar
           </button>
         </div>
 
         <div v-for="(set, index) in querySets" :key="index" class="set-container">
           <div class="card-header" style="margin-bottom: 10px;">
-            <h3 style="margin: 0; color: var(--accent-purple);">Conjunto {{ String.fromCharCode(65 + index) }}</h3>
-            <button class="btn btn-danger" @click="removeSet(index)" v-if="querySets.length > 1">Remover</button>
+            <h3 style="color: var(--accent-purple);">Conjunto {{ String.fromCharCode(65 + index) }}</h3>
+            <button class="btn btn-danger btn-sm" @click="removeSet(index)" v-if="querySets.length > 1">Remover</button>
           </div>
 
           <label>Tipo de Filtro</label>
@@ -118,19 +178,30 @@
           </div>
         </div>
 
+        <div class="set-container" style="border-color: var(--accent-purple);">
+          <label style="color: var(--text-primary); font-weight: 600;">Operación de Conjuntos</label>
+          <select v-model="operacion" style="margin-bottom: 0;">
+            <option value="union">Unión (A ∪ B)</option>
+            <option value="interseccion">Intersección (A ∩ B)</option>
+            <option value="diferencia">Diferencia / Excepto (A - B)</option>
+          </select>
+        </div>
+
         <button class="btn btn-primary btn-block" @click="getDashboardData" style="margin-top: 10px;">
           Generar Diagrama
         </button>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+      <div class="visualization-panel">
 
         <div v-if="resultadoOperacion !== null" class="dashboard-card result-card">
-          <span style="font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
-            Participantes:
+          <span style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+            Participantes Totales
           </span>
           <div class="result-value">{{ resultadoOperacion }}</div>
-          <span style="font-size: 12px; opacity: 0.8;">Basado en la configuración actual de filtros</span>
+          <span style="font-size: 13px; opacity: 0.9;">
+            Operación: <strong>{{ operacion.toUpperCase() }}</strong>
+          </span>
         </div>
 
         <div class="dashboard-card" style="flex-grow: 1;">
@@ -138,6 +209,7 @@
             <canvas id="vennCanvas"></canvas>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -148,11 +220,11 @@
     createApp({
       data() {
         return {
-          carrerasDisponibles: [], // Array to hold careers from DB,
-          preguntasDisponibles: [], // Array to hold questions from DB
+          carrerasDisponibles: [],
+          preguntasDisponibles: [],
           querySets: [
-            { questionId: '', answerValue: '' }, // Initialize empty to force dropdown selection
-            { questionId: '', answerValue: '' }
+            { type: '', id_pregunta: '', valor: '', id_programa: '', genero: '', semestre: '' },
+            { type: '', id_pregunta: '', valor: '', id_programa: '', genero: '', semestre: '' }
           ],
           operacion: 'union',
           rawData: null,
@@ -160,7 +232,6 @@
         };
       },
       mounted() {
-        // Fetch questions as soon as the page loads
         this.cargarPreguntas();
         this.cargarCarreras();
       },
@@ -199,7 +270,6 @@
             this.carrerasDisponibles = await response.json();
           } catch (error) {
             console.error("Error loading careers:", error);
-            alert("No se pudieron cargar las carreras desde la base de datos.");
           }
         },
         async cargarPreguntas() {
@@ -208,11 +278,12 @@
             this.preguntasDisponibles = await response.json();
           } catch (error) {
             console.error("Error loading questions:", error);
-            alert("No se pudieron cargar las preguntas desde la base de datos.");
           }
         },
         addSet() {
-          if (this.querySets.length < 3) this.querySets.push({ questionId: '', answerValue: '' });
+          if (this.querySets.length < 3) {
+            this.querySets.push({ type: '', id_pregunta: '', valor: '', id_programa: '', genero: '', semestre: '' });
+          }
         },
         removeSet(index) {
           if (this.querySets.length > 1) {
@@ -223,30 +294,15 @@
         },
         async getDashboardData() {
           const isValid = this.querySets.every(set => {
-            if (set.type === 'pregunta') {
-              // Si es pregunta, obligamos a que tenga ID y un valor (Sí/No)
-              return set.id_pregunta !== '' && set.valor !== '';
-            }
-            if (set.type === 'carrera') {
-              // Si es carrera, solo necesitamos que haya seleccionado un id_programa
-              return set.id_programa !== '';
-            }
-            if (set.type === 'genero') {
-              // Si es género, solo necesitamos que haya seleccionado el género
-              return set.genero !== '';
-            }
-            if (set.type === 'semestre') {
-              return set.semestre !== '';
-            }
+            if (set.type === 'pregunta') return set.id_pregunta !== '' && set.valor !== '';
+            if (set.type === 'carrera') return set.id_programa !== '';
+            if (set.type === 'genero') return set.genero !== '';
+            if (set.type === 'semestre') return set.semestre !== '';
             return false;
           });
 
           if (!isValid) {
             alert("Por favor, asegúrese de completar todos los campos requeridos según el tipo de filtro elegido.");
-            return;
-          }
-          if (!isValid) {
-            alert("Por favor asegúrese de seleccionar una pregunta y una respuesta para todos los conjuntos.");
             return;
           }
 
@@ -270,12 +326,10 @@
           const val = (key) => apiData[key] || 0;
           const chartData = [];
 
-          // 1. PRIMERO agregamos los conjuntos principales para que formen los 3 círculos externos
           if (this.querySets.length >= 1) chartData.push({ sets: ['A'], value: val('A') });
           if (this.querySets.length >= 2) chartData.push({ sets: ['B'], value: val('B') });
           if (this.querySets.length === 3) chartData.push({ sets: ['C'], value: val('C') });
 
-          // 2. DESPUÉS agregamos todas las intersecciones posibles
           if (this.querySets.length >= 2) {
             chartData.push({ sets: ['A', 'B'], value: val('AB') });
           }
@@ -286,13 +340,13 @@
           }
 
           const colorPalette = [
-            'rgba(167, 243, 208, 0.9)',   // A: Pastel Green
-            'rgba(233, 213, 255, 0.9)',   // B: Pastel Purple
-            'rgba(191, 219, 254, 0.9)',   // C: Pastel Blue
-            'rgba(200, 228, 231, 0.7)',   // Intersección A ∩ B (Soft teal mix)
-            'rgba(179, 231, 231, 0.7)',   // Intersección A ∩ C (Soft cyan mix)
-            'rgba(212, 216, 255, 0.7)',   // Intersección B ∩ C (Soft periwinkle mix)
-            'rgba(243, 244, 246, 0.8)'    // Intersección A ∩ B ∩ C (Off-white/Light gray)
+            'rgba(167, 243, 208, 0.9)',
+            'rgba(233, 213, 255, 0.9)',
+            'rgba(191, 219, 254, 0.9)',
+            'rgba(200, 228, 231, 0.7)',
+            'rgba(179, 231, 231, 0.7)',
+            'rgba(212, 216, 255, 0.7)',
+            'rgba(243, 244, 246, 0.8)'
           ];
 
           this.chartInstance = new Chart(ctx, {
@@ -308,21 +362,16 @@
               }]
             },
             options: {
-              // 1. Changes the color of the numbers and set labels (A, B, C)
               color: '#ffffff',
-
-              // 2. Controls the size and style of the numbers inside the chart
               font: {
-                size: 32,          // <-- Increase or decrease this value (default is usually 12)
-                weight: 'bold',    // <-- Makes the numbers thicker and easier to read
-                family: "'Inter', sans-serif" // Matches your dashboard's modern font
+                size: 24, // Reducido un poco para que escale mejor en móvil
+                weight: 'bold',
+                family: "'Inter', sans-serif"
               },
-
               plugins: {
                 legend: {
                   labels: {
                     color: '#ffffff',
-                    // You can optionally control the legend text size separately here
                     font: {
                       size: 14,
                       weight: 'normal'

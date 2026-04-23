@@ -1,42 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey</title>
-  <link rel="stylesheet" href="/css/login.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
   <link rel="stylesheet" href="/css/base.css">
   <style>
     /* =========================================
-       Survey Specific Styles & Scrollbar
+       Survey Specific Styles (Mobile First)
        ========================================= */
 
-    /* Custom Scrollbar for the Card */
-    .dashboard-card::-webkit-scrollbar {
-      width: 8px;
+    .survey-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
-    .dashboard-card::-webkit-scrollbar-track {
-      background: var(--bg-base);
-      border-radius: 0 var(--border-radius-card) var(--border-radius-card) 0;
+    /* En móvil, la tarjeta crece naturalmente. En desktop, limitamos la altura. */
+    .survey-card {
+      padding: 20px;
     }
 
-    .dashboard-card::-webkit-scrollbar-thumb {
-      background: var(--bg-input);
-      border-radius: 10px;
-      border: 2px solid var(--bg-card);
-    }
+    @media (min-width: 768px) {
+      .survey-card {
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 30px;
+      }
 
-    .dashboard-card::-webkit-scrollbar-thumb:hover {
-      background: var(--accent-purple);
+      /* Custom Scrollbar for Desktop Card */
+      .survey-card::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .survey-card::-webkit-scrollbar-track {
+        background: var(--bg-base);
+        border-radius: 0 var(--border-radius-card) var(--border-radius-card) 0;
+      }
+
+      .survey-card::-webkit-scrollbar-thumb {
+        background: var(--bg-input);
+        border-radius: 10px;
+        border: 2px solid var(--bg-card);
+      }
+
+      .survey-card::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-purple);
+      }
     }
 
     /* Progress Bar */
+    .survey-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .survey-header-top h1 {
+      margin: 0;
+      font-size: 24px;
+      white-space: nowrap;
+    }
+
     .progress-container {
       flex-grow: 1;
-      height: 6px;
+      height: 8px;
       background-color: var(--bg-input);
       border-radius: 10px;
       margin-left: 20px;
@@ -57,8 +88,10 @@
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 12px;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      /* Desplazamiento suave en iOS */
       scrollbar-width: none;
-      /* Hide for Firefox */
+      /* Ocultar en Firefox */
     }
 
     .tabs::-webkit-scrollbar {
@@ -69,10 +102,11 @@
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-secondary);
-      padding: 8px 16px;
+      padding: 10px 16px;
+      /* Aumentado para mejor área táctil en móvil */
       cursor: pointer;
       font-family: var(--font-main);
-      font-size: 13px;
+      font-size: 14px;
       white-space: nowrap;
       border-radius: var(--border-radius-element);
       transition: all 0.2s;
@@ -97,10 +131,16 @@
 
     .question-item:focus-within {
       border-color: var(--accent-purple);
-      transform: translateX(4px);
+    }
+
+    @media (min-width: 768px) {
+      .question-item:focus-within {
+        transform: translateX(4px);
+      }
     }
 
     .question-text {
+      margin-top: 0;
       margin-bottom: 15px;
       font-size: 15px;
       line-height: 1.6;
@@ -120,6 +160,8 @@
       cursor: pointer;
       color: var(--text-secondary);
       transition: color 0.2s;
+      padding: 8px 0;
+      /* Aumenta el área táctil en vertical */
     }
 
     .radio-label:hover {
@@ -128,25 +170,37 @@
 
     .radio-label input[type="radio"] {
       accent-color: var(--accent-green);
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
     }
 
     /* Pagination Dots */
+    .pagination-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .pagination-header label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
     .dots-container {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       justify-content: center;
-      margin: 20px 0;
     }
 
     .dot-button {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       border: none;
-      background: var(--bg-input);
+      background: var(--border-color);
       cursor: pointer;
       padding: 0;
       transition: all 0.3s ease;
@@ -154,7 +208,7 @@
 
     .dot-active {
       background: var(--accent-green);
-      width: 20px;
+      width: 24px;
       border-radius: 10px;
     }
 
@@ -167,24 +221,36 @@
 
     .page-navigation {
       display: flex;
-      justify-content: space-between;
+      gap: 15px;
       margin-bottom: 20px;
     }
 
     .btn-secondary {
-      background: var(--bg-input);
+      background: var(--bg-base);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
+      flex: 1;
+      /* Los botones ocupan el mismo ancho en móvil */
     }
 
     .btn-secondary:hover:not(:disabled) {
       background: var(--border-color);
     }
 
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .category-title {
       font-size: 20px;
       color: var(--accent-purple);
+      margin-top: 0;
       margin-bottom: 20px;
+    }
+
+    .action-buttons button {
+      margin-bottom: 10px;
     }
 
     .loading-state {
@@ -192,91 +258,114 @@
       padding: 40px;
       color: var(--text-secondary);
     }
+
+    .message {
+      padding: 12px;
+      border-radius: var(--border-radius-element);
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .message.success {
+      color: var(--accent-green);
+      background: rgba(144, 242, 169, 0.1);
+      border: 1px solid rgba(144, 242, 169, 0.2);
+    }
+
+    .message.error {
+      color: var(--danger-red);
+      background: rgba(255, 92, 92, 0.1);
+      border: 1px solid rgba(255, 92, 92, 0.2);
+    }
   </style>
 </head>
 
 <body>
   <div id="app" class="dashboard-grid">
-    <div class="dashboard-card"
-      style="grid-column: 1 / -1; max-width: 800px; margin: 0 auto; width: 100%; max-height: 85vh; overflow-y: auto;">
+    <div class="survey-container">
+      <div class="dashboard-card survey-card">
 
-      <div class="card-header">
-        <h1>Encuesta</h1>
-        <div class="progress-container">
-          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
-        </div>
-      </div>
-
-      <div v-if="loading" class="loading-state">
-        <p>Cargando encuesta...</p>
-      </div>
-
-      <div v-if="error" class="message error">{{ error }}</div>
-
-      <div v-if="!loading && !error">
-        <div class="tabs">
-          <button v-for="(category, index) in categories" :key="category.id" class="tab-button"
-            :class="{ active: index === currentCategoryIndex }" @click="showCategory(index)">
-            {{ category.nombre }}
-          </button>
+        <div class="survey-header-top">
+          <h1>Encuesta</h1>
+          <div class="progress-container">
+            <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+          </div>
         </div>
 
-        <form @submit.prevent="null">
-          <div class="category-questions">
-            <h2 class="category-title">{{ currentCategory.nombre }}</h2>
+        <div v-if="loading" class="loading-state">
+          <p>Cargando encuesta...</p>
+        </div>
 
-            <div v-if="totalPages > 1" class="pagination-header">
-              <label>Página {{ currentPageInCategory + 1 }} de {{ totalPages }}</label>
-              <div class="dots-container">
-                <button v-for="(page, idx) in totalPages" :key="idx" type="button" class="dot-button"
-                  :class="{ 'dot-active': currentPageInCategory === idx }" @click="showPage(idx)">
+        <div v-if="error" class="message error">{{ error }}</div>
+
+        <div v-if="!loading && !error">
+          <div class="tabs">
+            <button v-for="(category, index) in categories" :key="category.id" class="tab-button"
+              :class="{ active: index === currentCategoryIndex }" @click="showCategory(index)">
+              {{ category.nombre }}
+            </button>
+          </div>
+
+          <form @submit.prevent="null">
+            <div class="category-questions">
+              <h2 class="category-title">{{ currentCategory.nombre }}</h2>
+
+              <div v-if="totalPages > 1" class="pagination-header">
+                <label>Página {{ currentPageInCategory + 1 }} de {{ totalPages }}</label>
+                <div class="dots-container">
+                  <button v-for="(page, idx) in totalPages" :key="idx" type="button" class="dot-button"
+                    :class="{ 'dot-active': currentPageInCategory === idx }" @click="showPage(idx)">
+                  </button>
+                </div>
+              </div>
+
+              <div v-for="question in currentPageQuestions" :key="question.id" class="question-item">
+                <p class="question-text">{{ question.texto }}</p>
+                <div class="options-group">
+                  <label class="radio-label">
+                    <input type="radio" :name="'q' + question.id" value="Sí" v-model="responses[question.id]">
+                    <span>Sí</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" :name="'q' + question.id" value="No" v-model="responses[question.id]">
+                    <span>No</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="survey-footer">
+              <div class="page-navigation" v-if="totalPages > 1">
+                <button type="button" class="btn btn-secondary" @click="prevPage"
+                  :disabled="currentPageInCategory === 0">
+                  Anterior
+                </button>
+                <button type="button" class="btn btn-secondary" @click="nextPage"
+                  :disabled="currentPageInCategory >= totalPages - 1">
+                  Siguiente
+                </button>
+              </div>
+
+              <div class="action-buttons">
+                <button v-if="currentCategoryIndex < categories.length - 1" @click="nextCategory"
+                  class="btn btn-primary btn-block" :disabled="!isCurrentCategoryComplete">
+                  Siguiente Categoría
+                </button>
+
+                <button v-if="isFormValid" @click="submitResponses" class="btn btn-primary btn-block">
+                  Enviar Respuestas
                 </button>
               </div>
             </div>
+          </form>
+        </div>
 
-            <div v-for="question in currentPageQuestions" :key="question.id" class="question-item">
-              <p class="question-text">{{ question.texto }}</p>
-              <div class="options-group">
-                <label class="radio-label">
-                  <input type="radio" :name="'q' + question.id" value="Sí" v-model="responses[question.id]">
-                  <span>Sí</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" :name="'q' + question.id" value="No" v-model="responses[question.id]">
-                  <span>No</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="survey-footer">
-            <div class="page-navigation" v-if="totalPages > 1">
-              <button type="button" class="btn btn-secondary" @click="prevPage" :disabled="currentPageInCategory === 0">
-                Anterior
-              </button>
-              <button type="button" class="btn btn-secondary" @click="nextPage"
-                :disabled="currentPageInCategory >= totalPages - 1">
-                Siguiente
-              </button>
-            </div>
-
-            <div class="action-buttons">
-              <button v-if="currentCategoryIndex < categories.length - 1" @click="nextCategory"
-                class="btn btn-primary btn-block" :disabled="!isCurrentCategoryComplete">
-                Siguiente Categoría
-              </button>
-
-              <button v-if="isFormValid" @click="submitResponses" class="btn btn-primary btn-block">
-                Enviar Respuestas
-              </button>
-            </div>
-          </div>
-        </form>
+        <p v-if="message" class="message"
+          :class="{ error: message.includes('Error'), success: message.includes('exitosamente') }">
+          {{ message }}
+        </p>
       </div>
-
-      <p v-if="message" class="message" :class="{ error: message.includes('Error') }">
-        {{ message }}
-      </p>
     </div>
   </div>
 
@@ -357,17 +446,15 @@
           try {
             const response = await fetch('/survey/data');
             if (!response.ok) {
-              throw new Error('Failed to load survey');
+              throw new Error('No se pudo cargar la encuesta');
             }
             const data = await response.json();
             this.categories = data.categories;
 
-            // Load existing responses for this participant
             const savedResp = await fetch(`/survey/responses/${encodeURIComponent(this.code)}`)
               .then(res => res.ok ? res.json() : Promise.resolve({ responses: [] }))
               .catch(() => ({ responses: [] }));
 
-            // Create a map of saved responses for easy lookup
             if (savedResp.responses) {
               savedResp.responses.forEach(resp => {
                 this.savedResponses[resp.id_pregunta] = resp.valor;
@@ -385,10 +472,17 @@
         showCategory(index) {
           this.currentCategoryIndex = index;
           this.currentPageInCategory = 0;
+          // Hacer scroll hacia arriba cuando se cambia de categoría
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          const card = document.querySelector('.survey-card');
+          if (card) card.scrollTo({ top: 0, behavior: 'smooth' });
         },
 
         showPage(index) {
           this.currentPageInCategory = index;
+          // Hacer scroll hacia arriba al cambiar de página
+          const card = document.querySelector('.survey-card');
+          if (card) card.scrollTo({ top: 0, behavior: 'smooth' });
         },
 
         prevCategory() {
@@ -406,12 +500,14 @@
         prevPage() {
           if (this.currentPageInCategory > 0) {
             this.currentPageInCategory--;
+            this.showPage(this.currentPageInCategory);
           }
         },
 
         nextPage() {
           if (this.currentPageInCategory < this.totalPages - 1) {
             this.currentPageInCategory++;
+            this.showPage(this.currentPageInCategory);
           }
         },
 
@@ -435,9 +531,15 @@
             });
             if (!response.ok) {
               const result = await response.json();
-              throw new Error(result.error || 'Failed to submit responses');
+              throw new Error(result.error || 'Error al enviar las respuestas');
             }
             this.message = 'Respuestas enviadas exitosamente. Gracias por participar.';
+
+            // Opcional: Redirigir o limpiar el formulario después del éxito
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 3000);
+
           } catch (error) {
             this.message = error.message;
           }
@@ -448,9 +550,6 @@
       },
     }).mount('#app');
   </script>
-</body>
-
-</html>
 </body>
 
 </html>
