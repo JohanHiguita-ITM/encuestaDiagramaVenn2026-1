@@ -86,6 +86,7 @@
           <option value="pregunta">Pregunta de Encuesta</option>
           <option value="carrera">Carrera Académica</option>
           <option value="genero">Género</option>
+          <option value="semestre">Semestre</option>
         </select>
 
         <div v-if="set.type === 'pregunta'">
@@ -112,11 +113,14 @@
             <option value="Prefiero no responder">Prefiero no responder</option>
           </select>
         </div>
+        <div v-if="set.type === 'semestre'">
+          <input type="number" v-model="set.semestre" min="1" max="10" placeholder="Semestre (1-10)" required>
+        </div>
       </div>
     </div>
 
     <hr style="margin: 20px 0;">
-    <button class="btn btn-primary" @click="fetchVennData" style="padding: 10px 20px; font-size: 16px;">
+    <button class="btn btn-primary" @click="getDashboardData" style="padding: 10px 20px; font-size: 16px;">
       Generate Diagram & Calculate
     </button>
 
@@ -208,7 +212,7 @@
             if (this.chartInstance) this.chartInstance.destroy();
           }
         },
-        async fetchVennData() {
+        async getDashboardData() {
           const isValid = this.querySets.every(set => {
             if (set.type === 'pregunta') {
               // Si es pregunta, obligamos a que tenga ID y un valor (Sí/No)
@@ -221,6 +225,9 @@
             if (set.type === 'genero') {
               // Si es género, solo necesitamos que haya seleccionado el género
               return set.genero !== '';
+            }
+            if (set.type === 'semestre') {
+              return set.semestre !== '';
             }
             return false;
           });

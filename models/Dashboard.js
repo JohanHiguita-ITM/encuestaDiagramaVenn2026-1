@@ -43,6 +43,16 @@ class Dashboard {
           WHERE genero = $${pIdx++}
         )`);
       }
+      else if (set.type === 'semestre') {
+        const semestre = parseInt(set.semestre, 10);
+        values.push(semestre);
+        
+        ctes.push(`set_${letter} AS (
+          SELECT DISTINCT id_participante 
+          FROM participante 
+          WHERE semestre = $${pIdx++}
+        )`);
+      }
     });
 
     if (ctes.length === 0) return {};
